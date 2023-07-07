@@ -1,0 +1,66 @@
+================
+data-data-source *required
+================
+=DEFAULT
+by default data-data-source is an attribute of the element .clone
+this options allows for a unique endpoint per clone HTML object, 1 clone = 1 endpoint
+it also allows for multiple items filled into one pocket with unique data sources
+=EXAMPLE
+<items>
+    <item id="endpoint-display">
+        <!-- This item will be added to the pocket and filled with data from the dataSource -->
+        <div class="clone" data-data-source="/Collections/dataPull?name=zzzap.io&key=formatting">
+        {{rec:name}} {{rec:nameLast}}
+        </div>
+    </item>
+</items>
+
+=OVERRIDE
+data-data-source can also be placed in .pocket and overrides the .clone data-data-source, this allows for reuse of the HTML object with different data sources (1 clone = many endpoints)
+=EXAMPLE
+<div class="pocket" data-data-source="/Collections/dataPull?name=zzzap.io&key=formatting">
+    <!-- Item will be placed here and filled with data from this dataSource -->
+</div>
+
+==========
+data-items *required
+==========
+data-items is used with .pocket and is a comma delimited list of names that refer to an <item id="name">
+all the items will be brought into the pocket
+if the item is not available in the <html> syntax an attempt will be made to get it from the backend by sending the reference to pckt.getHtml(name)
+An override can be made by using data-override-{name} <div class="pocket" data-items="sample" data-override-sample="/Forms/login"></div>
+=EXAMPLE
+<div class="pocket" name="someName" data-items="sample"></div>
+
+<items>
+    <item id="sample">Some text<item>
+</items>
+
+========
+callback
+========
+an item can have a callback and is triggered by the data request or the HTML request
+the data callback will run when the item is called and filled from the request
+the data callback is passed the name (request URL) of the value of the id attribute
+the HTML callback will run after the html is requested and placed in the pocket
+the HTML callback is passed the id attribute of the item, no object will be passed
+the callback is the name of the function to be called
+=EXAMPLE
+<items>
+    <item id="sample" data-callback="cleanup">Some text<item>
+</items>
+
+also, a callback named pckt.callback (user defined) will run after each item has been returned at the end of the process.
+the arguments are 'name' (this is the path of the request) and 'object' (the object used to fill the item)
+=EXAMPLE
+pckt.callback = function(name,obj){
+    //do stuff
+    console.log({name,obj});
+}
+
+===
+dev
+===
+CORS Help
+https://stackoverflow.com/questions/10752055/cross-origin-requests-are-only-supported-for-http-error-when-loading-a-local
+https://stackoverflow.com/questions/18586921/how-to-launch-html-using-chrome-at-allow-file-access-from-files-mode
