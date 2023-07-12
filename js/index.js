@@ -361,7 +361,7 @@ let pckt = (function(id) {
     let prefix      = "pa-";
     let recordsAt   = "response";
     return{
-        getData: function(name, post){
+        getData: function(name, post, callback){
             //if queued do nothing
             if(queued.data.includes(name)){
                 return;
@@ -397,10 +397,15 @@ let pckt = (function(id) {
                 console.log(error);
             }).always(function (obj) {
                 callbacks.data[name] = obj;
+                if(callback && typeof pckt[callback] === "function"){
+                    setTimeout(function (){
+                        pckt[callback]();
+                    })
+                }
                 pckt.isFinished();
             });
         },
-        getHtml: function(name,pocketData){;
+        getHtml: function(name,pocketData){
             $("#" + name).remove();
             //only try once check queue todo
             if(queued.html.includes(name)){
@@ -441,7 +446,8 @@ let pckt = (function(id) {
                 let beenCloned      = $(this).find(".cloned").length;
                 if(!beenCloned && (!contents || contents === defaultContents || toBeCloned)){
                     var data = $(this).data();
-                    var name = $(this).attr("name");
+                    var name = ($(this).attr("name") || "pocket-" + Math.floor(Math.random() * 1000000));
+                    $(this).attr("name", name);
                     pckt.addItems(data.items || data.itemsDefault || "default", name);
                 }
             });
@@ -471,7 +477,12 @@ let pckt = (function(id) {
         addItems: function (itemIds, pocketName) {
             var pocket     = $(".pocket[name=" + pocketName + "]") || $(".pocket[name=main]");
             var pocketData = $(pocket).data();
-            String(itemIds).split(",").forEach(function (itemId) {
+            let defaultContents = $("items").find("item#default").html();
+            let itemIdsArr = String(itemIds).split(",");
+            if(itemIdsArr.length === 1){
+                pckt.emptyPockets(pocketName);
+            }
+            itemIdsArr.forEach(function (itemId) {
                 var item     = $("items").find("item#" + itemId);
                 var itemData = $(item).data();
                 //add to loading - html
@@ -499,7 +510,7 @@ let pckt = (function(id) {
                     //grab the missing item (html)
                     pckt.getHtml(itemId,pocketData);
                 }
-                $(pocket).append($(item)[0].innerHTML);
+                $(pocket).append($(item)[0].innerHTML.replace(defaultContents,''));
                 callbacks.html[itemId] = null;
             });
 

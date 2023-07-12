@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="icon" href="favicon.png">
     <style>
-        .clone {
+        .clone, items {
             display: none;
         }
     </style>
@@ -18,17 +18,45 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
 <!-- main body -->
-<img src="images/brackets.logo.png" width="200" alt="">
-<h1>Hello, world!</h1>
-<div class="pocket" name="pocketone" data-items="sample"></div>
+<div class="container">
+
+    <img src="images/brackets.logo.png" width="200" alt="">
+
+    <!--pocket sample 1-->
+    <!--html from a request-->
+    <h1 class="pocket" data-items="demo"></h1>
+    <!-- Item will be placed inside the tag and filled with data from this dataSource -->
+
+    <!--pocket sample 2-->
+    <!--html from an item-->
+    <div class="pocket" name="html" data-items="frontend-html"></div>
+
+    <!--pocket sample 3-->
+    <!--html from an item w/data (static cloning)-->
+    <div class="pocket" name="languages" data-items="sample"></div>
+
+    <!--pocket sample 4-->
+    <!--html from a request w/data (dynamic cloning)-->
+    <div class="pocket" name="products" data-items="democlone"></div>
+
+</div>
 <!-- END main body -->
 
 <!-- pocket items -->
+<!-- this is an HTML library of snippets -->
+<!-- used to create the layout as needed -->
 <items>
-    <item id="default">Loading...</item>
+    <item id="default">..loading</item>
+    <item id="frontend-html">
+        <p>Welcome to the CORE.js demo. This HTML snippet is called from an inline "item" built into index.html and has now been placed into the correct pocket.</p>
+    </item>
     <item id="sample">
+        <h3>CORE Languages</h3>
+        <p>This particular HTML is rendered from an inline "item". Then the cloned list is rendered from the "static" JSON file found at /json/demo.js.</p>
         <div class="clone" data-data-source="json/demo.json">
-            <span>{{rec:name}}</span>
+            <ul>
+                <li>{{rec:name}} : {{rec:detail}}</li>
+            </ul>
         </div>
     </item>
 </items>
@@ -39,8 +67,26 @@
 
 <!-- Custom Javascript -->
 <script>
+    /*
+    custom scripts below are created to help the flow as needed
+    the below code is for advanced functionality demonstration purposes
+     */
+
+    //preload 3rd party data, using the callback "productDataFormat" (custom function)
+    pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
+    //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
+    pckt.productDataFormat = function (){
+         let newObj = strg.get("https://dummyjson.com/products");
+         if(newObj){
+             //this function stores the new "data source" by the name "products"
+             //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
+             strg.set("products",{response:newObj.products});
+         }
+    }
+
+    //this function is called by default, if available, when all pockets are filled (or the process is complete)
     pckt.callback = function(name,obj){
-        console.log({name,obj});
+        console.log(name,strg.del(name));
     }
 </script>
 
