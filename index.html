@@ -20,11 +20,11 @@
 <!-- main body -->
 <div class="container">
 
-    <img class="mt-2" src="images/logo.png" width="200" alt="">
+    <img class="mt-2" src="images/view-001/logo.png" width="200" alt="">
 
     <!--pocket sample 1-->
     <!--html from a request-->
-    <h1 class="pocket" data-items="demo"></h1>
+    <h1 class="pocket" data-items="demo" data-override-demo="/html/view-001/demo.html"></h1>
     <!-- Item will be placed inside the tag and filled with data from this dataSource -->
 
     <!--pocket sample 2-->
@@ -37,7 +37,7 @@
 
     <!--pocket sample 4-->
     <!--html from a request w/data (dynamic cloning)-->
-    <div class="pocket" data-items="democlone"></div>
+    <div class="pocket" data-items="democlone" data-override-democlone="/html/view-001/democlone.html"></div>
 
 </div>
 <!-- END main body -->
@@ -56,8 +56,8 @@
     </item>
     <item id="sample">
         <h3>CORE Languages</h3>
-        <p>This particular HTML is rendered from an inline "item". Then the cloned list is rendered from the "static" JSON file found at /js/json/demo.json.</p>
-        <div class="clone" data-data-source="js/json/demo.json">
+        <p>This particular HTML is rendered from an inline "item". Then the cloned list is rendered from the "static" JSON file found at /js/json/view-001/demo.json.</p>
+        <div class="clone" data-data-source="js/json/view-001/demo.json">
             <ul>
                 <li>{{rec:name}} : {{rec:detail}}</li>
             </ul>
