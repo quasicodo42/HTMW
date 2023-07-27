@@ -20,7 +20,7 @@
 <!-- main body -->
 <div class="container">
 
-    <img src="images/brackets.logo.png" width="200" alt="">
+    <img class="mt-2" src="images/logo.png" width="200" alt="">
 
     <!--pocket sample 1-->
     <!--html from a request-->
@@ -29,15 +29,15 @@
 
     <!--pocket sample 2-->
     <!--html from an item-->
-    <div class="pocket" name="html" data-items="frontend-html"></div>
+    <div class="pocket" data-items="frontend-html"></div>
 
     <!--pocket sample 3-->
     <!--html from an item w/data (static cloning)-->
-    <div class="pocket" name="languages" data-items="sample"></div>
+    <div class="pocket" data-items="sample"></div>
 
     <!--pocket sample 4-->
     <!--html from a request w/data (dynamic cloning)-->
-    <div class="pocket" name="products" data-items="democlone"></div>
+    <div class="pocket" data-items="democlone"></div>
 
 </div>
 <!-- END main body -->
@@ -48,12 +48,16 @@
 <items>
     <item id="default">..loading</item>
     <item id="frontend-html">
-        <p>Welcome to the CORE.js demo. This HTML snippet is called from an inline "item" built into index.html and has now been placed into the correct pocket.</p>
+        <p>Welcome to the <span class="fw-bold">htmw.in.js</span> demo, a simple frontend display architecture for creating single-page web apps.</p>
+        <p>If you can write simple HTML and you have a working knowledge of no-code JSON endpoints, you can have a fully functioning site up and running in no time.</p>
+        <p>The core framework is simple: 1) get data, 2) display data. And do both easily, and automagically or by user triggers!</p>
+        <p>There are 3 main concepts; pockets, items and cloning. You define "pockets" in your HTML, that are filled with HTML "items". Additionally, the "items" may contain HTML "clone" snippets that automatically fill with JSON data.</p>
+        <p>For example, this HTML snippet is called from an inline "item" built into index.html and has now been placed into the correct pocket.</p>
     </item>
     <item id="sample">
         <h3>CORE Languages</h3>
-        <p>This particular HTML is rendered from an inline "item". Then the cloned list is rendered from the "static" JSON file found at /json/demo.js.</p>
-        <div class="clone" data-data-source="json/demo.json">
+        <p>This particular HTML is rendered from an inline "item". Then the cloned list is rendered from the "static" JSON file found at /js/json/demo.json.</p>
+        <div class="clone" data-data-source="js/json/demo.json">
             <ul>
                 <li>{{rec:name}} : {{rec:detail}}</li>
             </ul>
@@ -63,7 +67,7 @@
 <!-- END pocket items -->
 
 <!-- Core Javascript -->
-<script src="js/index.js"></script>
+<script src="js/htmw.in.js"></script>
 
 <!-- Custom Javascript -->
 <script>
@@ -75,13 +79,13 @@
     //preload 3rd party data, using the callback "productDataFormat" (custom function)
     pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
     //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
-    pckt.productDataFormat = function (){
-         let newObj = strg.get("https://dummyjson.com/products");
-         if(newObj){
-             //this function stores the new "data source" by the name "products"
-             //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
-             strg.set("products",{response:newObj.products});
-         }
+    pckt.productDataFormat = function (obj){
+        let newObj = obj;
+        if(newObj){
+            //this function stores the new "data source" by the name "products"
+            //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
+            strg.set("products",{response:newObj.products});
+        }
     }
 
     //this function is called by default, if available, when all pockets are filled (or the process is complete)
