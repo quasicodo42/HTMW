@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
 <!-- main body -->
-<div class="container">
+<div class="container mb-3">
 
     <img class="mt-2" src="images/view-001/logo.png" width="200" alt="">
 
@@ -40,6 +40,9 @@
     <div class="pocket" data-items="democlone" data-override-democlone="/html/view-001/democlone.html"></div>
 
 </div>
+
+<footer class="footer mt-auto py-3 bg-light pocket" data-items="footer"></footer>
+
 <!-- END main body -->
 
 <!-- pocket items -->
@@ -48,26 +51,42 @@
 <items>
     <item id="default">..loading</item>
     <item id="frontend-html">
-        <p>Welcome to the <span class="fw-bold">htmw.in.js</span> demo, a simple frontend display architecture for creating single-page web apps.</p>
-        <p>If you can write simple HTML and you have a working knowledge of no-code JSON endpoints, you can have a fully functioning site up and running in no time.</p>
-        <p>The core framework is simple: 1) get data, 2) display data. And do both easily, and automagically or by user triggers!</p>
-        <p>There are 3 main concepts; pockets, items and cloning. You define "pockets" in your HTML, that are filled with HTML "items". Additionally, the "items" may contain HTML "clone" snippets that automatically fill with JSON data.</p>
-        <p>For example, this HTML snippet is called from an inline "item" built into index.html and has now been placed into the correct pocket.</p>
+        <p>Welcome to the <a href="/js/htmw.in.js" target="_blank"><span class="fw-bold">HTMW</span></a> demo, a simple frontend display architecture for creating single-page web apps.</p>
+        <p>If you can write simple HTML and have a working knowledge of no-code JSON endpoints, you can have a fully functioning site up and running in no time.</p>
+        <p>The core framework is simple: 1) get data, 2) display data. And do both easily, and automagically (or by user triggers)!</p>
+        <p>There are 3 main concepts; <span class="fw-bold">pockets</span>, <span class="fw-bold">items</span> and <span class="fw-bold">cloning</span>. You define "pockets" in your HTML, that are filled with HTML "items". Additionally, the "items" may contain HTML "clone" snippets that automatically fill with JSON data.</p>
+        <p>For example, this HTML snippet is called from an inline <span class="fw-bold">item</span> built into index.html and has been placed into the correct pocket, here.</p>
     </item>
     <item id="sample">
-        <h3>CORE Languages</h3>
-        <p>This particular HTML is rendered from an inline "item". Then the cloned list is rendered from the "static" JSON file found at /js/json/view-001/demo.json.</p>
-        <div class="clone" data-data-source="js/json/view-001/demo.json">
-            <ul>
-                <li>{{rec:name}} : {{rec:detail}}</li>
+        <h3>CORE Languages & Structures</h3>
+        <p>This particular HTML is rendered from an inline <span class="fw-bold">item</span>. Then, the cloned list is rendered from the "static" JSON file found at <a href="/js/json/view-001/demo.json" target="_blank">/js/json/view-001/demo.json</a>.</p>
+        <div>
+            <ul class="clone" data-data-source="js/json/view-001/demo.json">
+                <li>
+                    <span class="fw-bold">{{rec:name}}</span> - {{rec:detail}}
+                    <p>
+                        {{rec:desc}}
+                        <br><span class="fw-bold">Skill Level Required: {{rec:skill}}</span>
+                    </p>
+                </li>
             </ul>
+        </div>
+    </item>
+    <item id="footer">
+        <div class="container">
+            <span class="text-muted">
+                Websites using HTMW:
+                <span class="clone" data-data-source="js/json/samples.json">
+                    <a class="m-2" href="{{rec:website}}" target="site{{aug:index}}">{{rec:name}}</a>
+                </span>
+            </span>
         </div>
     </item>
 </items>
 <!-- END pocket items -->
 
 <!-- Core Javascript -->
-<script src="js/htmw.in.js"></script>
+<script src="/js/htmw.in.js"></script>
 
 <!-- Custom Javascript -->
 <script>

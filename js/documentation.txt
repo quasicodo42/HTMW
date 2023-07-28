@@ -15,12 +15,17 @@ it also allows for multiple items filled into one pocket with unique data source
     </item>
 </items>
 
-=OVERRIDE
+=OVERRIDE (data)
 data-data-source can also be placed in .pocket and overrides the .clone data-data-source, this allows for reuse of the HTML object with different data sources (1 clone = many endpoints)
 =EXAMPLE
-<div class="pocket" data-data-source="/Collections/dataPull?name=zzzap.io&key=formatting">
-    <!-- Item will be placed here and filled with data from this dataSource -->
-</div>
+<!-- Item will be placed inside and filled with data from this dataSource -->
+<div class="pocket" data-data-source="/Collections/dataPull?name=zzzap.io&key=formatting"></div>
+
+=OVERRIDE (html)
+data-override-{name} can be used in .pocket and will override the default endpoint behavior when requesting HTML
+=EXAMPLE
+<!-- HTML will be placed inside using the override endpoint -->
+<div class="pocket" data-items="demo" data-override-demo="/html/demo.html"></div>
 
 ==========
 data-items *required
