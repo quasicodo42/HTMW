@@ -9,7 +9,7 @@
     {
       "name":"CSS",
       "detail":"the prettiest lipstick",
-      "desc":"CSS makes the web look good! We're using the <a href=\"https://getbootstrap.com/docs/5.1/getting-started/introduction/\" target=\"_blank\">Bootstrap</a> library here and we suggest doing that unless you are awesome at CSS.",
+      "desc":"CSS makes the web look good! We're using the <a href=\"https://getbootstrap.com/docs/5.1/getting-started/introduction/\" target=\"_blank\">Bootstrap</a> library here and we suggest using a library unless you are already awesome at CSS.",
       "skill": "1+"
     },
     {

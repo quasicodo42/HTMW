@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hello, world!</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="" />
+    <link rel="icon" href="favicon.png">
+</head>
+<body>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+
+<!-- main body -->
+<div>
+
+    <img src="images/view-001/logo.png" width="200" alt="">
+
+    <!--pocket sample 1-->
+    <!--html from a request-->
+    <h1 class="pocket" data-items="demo" data-override-demo="/html/view-001/demo.html"></h1>
+    <!-- Item will be placed inside the tag and filled with data from this dataSource -->
+
+    <!--pocket sample 2-->
+    <!--html from an item-->
+    <div class="pocket" data-items="frontend-html"></div>
+
+    <!--pocket sample 3-->
+    <!--html from an item w/data (static cloning)-->
+    <div class="pocket" data-items="sample"></div>
+
+    <!--pocket sample 4-->
+    <!--html from a request w/data (dynamic cloning)-->
+    <div class="pocket" data-items="democlone" data-override-democlone="/html/view-001/democlone.nocss.html"></div>
+
+</div>
+
+<div class="pocket" data-items="footer"></div>
+
+<!-- END main body -->
+
+<!-- pocket items -->
+<!-- this is an HTML library of snippets -->
+<!-- used to create the layout as needed -->
+<items style="display: none">
+    <item id="default">..loading</item>
+    <item id="frontend-html">
+        <p>Welcome to the <a href="/js/htmw.in.js" target="_blank">HTMW</a> demo, a simple frontend display architecture for creating single-page web apps.</p>
+        <p>If you can write simple HTML and have a working knowledge of no-code JSON endpoints, you can have a fully functioning site up and running in no time.</p>
+        <p>The core framework is simple: 1) get data, 2) display data. And do both easily, and automagically (or by user triggers)!</p>
+        <p>There are 3 main concepts; pockets, items and cloning. You define "pockets" in your HTML, that are filled with HTML "items". Additionally, the "items" may contain HTML "clone" snippets that automatically fill with JSON data.</p>
+        <p>For example, this HTML snippet is called from an inline item built into index.html and has been placed into the correct pocket, here.</p>
+    </item>
+    <item id="sample">
+        <h3>CORE Languages & Structures</h3>
+        <p>This particular HTML is rendered from an inline item. Then, the cloned list is rendered from the "static" JSON file found at <a href="/js/json/view-001/demo.json" target="_blank">/js/json/view-001/demo.json</a>.</p>
+        <div>
+            <ul class="clone" data-data-source="js/json/view-001/demo.json">
+                <li>
+                    {{rec:name}} - {{rec:detail}}
+                    <br>{{rec:desc}}
+                    <br>Skill Level Required: {{rec:skill}}
+                </li>
+            </ul>
+        </div>
+    </item>
+    <item id="footer">
+        <p>
+            Samples using HTMW:
+            <span class="clone" data-data-source="js/json/samples.json">
+                <span>
+                    <a class="m-2" href="{{rec:website}}" target="{{rec:target}}">{{rec:name}}</a> &nbsp;
+                </span>
+            </span>
+        </p>
+    </item>
+</items>
+<!-- END pocket items -->
+
+<!-- Core Javascript -->
+<script src="/js/htmw.in.js"></script>
+
+<!-- Custom Javascript -->
+<script>
+    /*
+    custom scripts below are created to help the flow as needed
+    the below code is for advanced functionality demonstration purposes
+     */
+
+    //preload 3rd party data, using the callback "productDataFormat" (custom function)
+    pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
+    //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
+    pckt.productDataFormat = function (obj){
+        let newObj = obj;
+        if(newObj){
+            //this function stores the new "data source" by the name "products"
+            //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
+            strg.set("products",{response:newObj.products});
+        }
+    }
+
+    //this function is called by default, if available, when all pockets are filled (or the process is complete)
+    pckt.callback = function(name,obj){
+        console.log(name,strg.del(name));
+    }
+</script>
+
+</body>
+</html>

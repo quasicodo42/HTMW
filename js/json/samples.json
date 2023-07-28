@@ -2,27 +2,43 @@
   "response": [
     {
       "website":"http://htmw.in",
-      "name":"Sample 01"
+      "name":"HTMW Basics",
+      "target":"_self"
+    },
+    {
+      "website":"/index.nocss.html",
+      "name":"HTMW w/o CSS",
+      "target":"_self"
+    },
+    {
+      "website":"/index.bnw.html",
+      "name":"HTMW Glory",
+      "target":"_self"
     },
     {
       "website":"https://zzzap.io",
-      "name":"zzzap.io"
+      "name":"zzzap.io",
+      "target":"_blank"
     },
     {
       "website":"http://churnrescue.com",
-      "name":"ChurnRescue.com"
+      "name":"ChurnRescue.com",
+      "target":"_blank"
     },
     {
       "website":"http://payopts.com",
-      "name":"PayOpts.com"
+      "name":"PayOpts.com",
+      "target":"_blank"
     },
     {
       "website":"http://urrnz.com",
-      "name":"Urrnz.com"
+      "name":"Urrnz.com",
+      "target":"_blank"
     },
     {
       "website":"http://uding.us",
-      "name":"uDing.us"
+      "name":"uDing.us",
+      "target":"_blank"
     }
   ]
 }
