@@ -1,6 +1,22 @@
 <h3>Sample Backend List (products)</h3>
-<p>This HTML is processed from a file found at <a href="/html/view-001/democlone.html" target="_blank">/html/view-001/democlone.html</a>. Then the cloned cells are rendered from a backend JSON request from <a href="https://dummyjson.com/products" target="_blank">https://dummyjson.com/products</a>.</p>
+<p>This HTML is processed from a file found at <a href="/html/view-001/democlone.html" target="_blank">/html/view-001/democlone.html</a>. Then the cloned elements are rendered from a backend JSON request found at <a href="https://dummyjson.com/products" target="_blank">https://dummyjson.com/products</a>.</p>
 <p>The following data is from JSON. It has been preloaded, reformatted and renamed to <span class="fst-italic">products</span> for proper framework consumption.</p>
 <div class="row clone" data-data-source="products">
-    <div class="col-3">{{aug:index}}: {{rec:title}} ({{rec:brand}})</div>
+    <div class="col-lg-3 col-md-6 col-sm-12">
+        <div class="item-header">
+            <span class="item-order">#{{aug:index}}</span>
+            <span class="item-title">{{rec:title}}</span>
+        </div>
+        <div class="item-brand">{{rec:brand}}</div>
+        <div class="item-image">
+            <img class="w-100 rounded" src="{{rec:thumbnail}}" alt="{{rec:title}}">
+        </div>
+        <div class="item-rating">
+            Rating: <span>{{rec:rating}}</span>
+        </div>
+        <div class="item-price">
+            Price: <span>${{rec:price}}</span>
+            <button class="btn btn-light float-end">Buy Now</button>
+        </div>
+    </div>
 </div>
