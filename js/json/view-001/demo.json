@@ -3,26 +3,32 @@
     {
       "name":"HTML",
       "detail":"the purest programming language (:",
-      "desc":"HTML holds the web together! Knowing basic HTML5 will get you up and running.",
+      "desc":"HTML holds the web together! Knowing basic <a href=\"https://www.w3schools.com/html/default.asp\" target=\"_blank\">HTML</a> will get you up and running.",
       "skill": "2+"
     },
     {
       "name":"CSS",
-      "detail":"the prettiest lipstick",
+      "detail":"the world wide lipstick",
       "desc":"CSS makes the web look good! We're using the <a href=\"https://getbootstrap.com/docs/5.1/getting-started/introduction/\" target=\"_blank\">Bootstrap</a> library here and we suggest using a library unless you are already awesome at CSS.",
       "skill": "1+"
     },
     {
       "name":"JavaScript",
-      "detail":"a powerful language to make it all work",
+      "detail":"a powerful language to process your HTML",
       "desc":"JavaScript gives life to your HTML! If you know JavaScript, that's great! But you don't need to know it at all to use HTMW, we're using <a href=\"https://jquery.com/\" target=\"_blank\">jQuery</a> for fun.",
       "skill": "0+"
     },
     {
       "name":"JSON",
       "detail":"a universal data format",
-      "desc":"JSON provides data to your HTML! If you are comfortable with JSON you can write and consume your own data. If you aren't you can use no-code endpoints like <a href=\"https://zzzap.io/\" target=\"_blank\">zzzap.io</a> for your data.",
+      "desc":"JSON provides data to your HTML! If you are comfortable with <a href=\"https://www.json.org/json-en.html\" target=\"_blank\">JSON</a> you can write and consume your own data. You can also use no-cod endpoints for your data.",
       "skill": "0+"
+    },
+    {
+      "name":"No-code Endpoints",
+      "detail":"a magical data universe",
+      "desc":"No-code provides backend functionality to your HTML! Using API/No-code endpoints you can integrate any type of data you need. Endpoints provide login functionality, data manipulation, data read/write & etc. for any project you can imagine. For more information see our partner no-code company at <a href=\"https://zzzap.io/\" target=\"_blank\">zzzap.io</a> for your data.",
+      "skill": "1+"
     }
   ]
 }
