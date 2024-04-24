@@ -549,6 +549,20 @@ let pckt = (function(id) {
 
             return item;
         },
+        objectDig: function (obj,digList) {
+            if(typeof digList === 'string'){
+                digList = digList.split(digList.includes(',') ? ',' : '.');
+            }
+            let member = digList.shift();
+            if(!isNaN(+member)){
+                member = +member; //try an index
+            }
+            if(!digList.length){
+                return obj[member] || undefined;
+            }else{
+                return pckt.objectDig(obj[member],digList);
+            }
+        },
         cloneRecords: function () {
             $(".pocket").find(".clone").each(function () {
                 var clone  = $(this);
@@ -591,6 +605,7 @@ let pckt = (function(id) {
                 var cloned = $($(clone)[0].outerHTML).empty().data({object:obj,cleanName:cleanName}).toggleClass("clone clone-container " +  cleanName).attr("data-ts",Date.now());
                 if(obj.recordsHeader.length && obj.records.length){
                     obj.records.forEach(function (record,i) {
+                        const recObj  = Object.fromEntries(obj.recordsHeader.map((_, i) => [obj.recordsHeader[i], record[i]]));
                         var cloneHtml = $($(clone)[0].innerHTML);//.data({index:i,record:record,recordHeader:obj.recordsHeader,objectName:data.dataSource}); //innerHTML has to have tag first TODO
                         if(!cloneHtml) return;
                         record.forEach(function (delta,ii) {
@@ -625,6 +640,11 @@ let pckt = (function(id) {
                                     value = i + 1;
                                 default:
                                 //ignore
+                            }
+                            switch(type){
+                                case 'rec':
+                                    value = pckt.objectDig(recObj,name);
+                                    break;
                             }
                             cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value));
                         });
