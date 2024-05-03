@@ -558,7 +558,7 @@ let pckt = (function(id) {
                 member = +member; //try an index
             }
             if(!digList.length){
-                return obj[member] || undefined;
+                return (obj.hasOwnProperty(member) ? obj[member] : undefined);
             }else{
                 return pckt.objectDig(obj[member],digList);
             }
