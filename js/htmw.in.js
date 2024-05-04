@@ -652,10 +652,11 @@ let pckt = (function(id) {
                             if(value === undefined){
                                 report.notFound.push(name);
                                 value = '';
-                            }
-                            if(value === null){
+                            }else if(value === null){
                                 report.nulls.push(name);
                                 value = '';
+                            }else if(typeof value === object){
+                                value = JSON.stringify(value);
                             }
                             cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value));
                         });
