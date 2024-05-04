@@ -606,16 +606,17 @@ let pckt = (function(id) {
                 if(obj.recordsHeader.length && obj.records.length){
                     obj.records.forEach(function (record,i) {
                         const recObj  = Object.fromEntries(obj.recordsHeader.map((_, i) => [obj.recordsHeader[i], record[i]]));
-                        var cloneHtml = $($(clone)[0].innerHTML);//.data({index:i,record:record,recordHeader:obj.recordsHeader,objectName:data.dataSource}); //innerHTML has to have tag first TODO
+                        let cloneHtml = $($(clone)[0].innerHTML);
                         if(!cloneHtml) return;
+                        let report = {notFound:[]};
                         record.forEach(function (delta,ii) {
-                            var name  = obj.recordsHeader[ii];
-                            var find  = '{{rec:' + name + '}}';
+                            let name  = obj.recordsHeader[ii];
+                            let find  = '{{rec:' + name + '}}';
                             cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(delta))
                                 //in = add delta to UI
                                 .find("in[name=" + name + "]").each(function () {
                                     //get what's in there + $(this).html()
-                                    var span = $("<span>").html(delta).data({name:name,value:delta,delta:delta});
+                                    let span = $("<span>").html(delta).data({name:name,value:delta,delta:delta});
                                     $(this).replaceWith(span);
                                 }).end()
                                 //up = add delta as attribute on parent
@@ -634,21 +635,26 @@ let pckt = (function(id) {
                             let type   = parts.shift();
                             let name   = parts.shift();
                             let clue   = parts.shift();
-                            let value  = "";
-                            switch(name){
-                                case "index":
-                                    value = i + 1;
-                                default:
-                                //ignore
-                            }
+                            let value;
                             switch(type){
-                                case 'rec':
+                                case 'rec': //record child data
                                     value = pckt.objectDig(recObj,name);
                                     break;
+                                case 'aug': //logical augmented data
+                                    switch(name){
+                                        case 'index':
+                                            value = i + 1;
+                                        default:
+                                        //ignore
+                                    }
+                                    break;
                             }
-                            cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value));
+                            if(value === undefined){
+                                report.notFound.push(name);
+                            }
+                            cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value === undefined ? '' : value));
                         });
-                        $(cloneHtml).toggleClass("cloned").data({index:i,record:record,recordHeader:obj.recordsHeader,objectName:data.dataSource,cleanName:cleanName});
+                        $(cloneHtml).toggleClass('cloned').data({index:i,record:record,recordHeader:obj.recordsHeader,rec:recObj,report:report,objectName:data.dataSource,cleanName:cleanName});
                         cloned = $(cloned).append(cloneHtml);
                     })
                     callbacks.data[name] = obj;
