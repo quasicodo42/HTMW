@@ -608,7 +608,7 @@ let pckt = (function(id) {
                         const recObj  = Object.fromEntries(obj.recordsHeader.map((_, i) => [obj.recordsHeader[i], record[i]]));
                         let cloneHtml = $($(clone)[0].innerHTML);
                         if(!cloneHtml) return;
-                        let report = {notFound:[]};
+                        let report = {notFound:[],nulls:[]};
                         record.forEach(function (delta,ii) {
                             let name  = obj.recordsHeader[ii];
                             let find  = '{{rec:' + name + '}}';
@@ -651,8 +651,13 @@ let pckt = (function(id) {
                             }
                             if(value === undefined){
                                 report.notFound.push(name);
+                                value = '';
                             }
-                            cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value === undefined ? '' : value));
+                            if(value === null){
+                                report.nulls.push(name);
+                                value = '';
+                            }
+                            cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value));
                         });
                         $(cloneHtml).toggleClass('cloned').data({index:i,record:record,recordHeader:obj.recordsHeader,rec:recObj,report:report,objectName:data.dataSource,cleanName:cleanName});
                         cloned = $(cloned).append(cloneHtml);
