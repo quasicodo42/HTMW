@@ -2,10 +2,17 @@
 data-data-source *required
 ================
 =DEFAULT
-by default data-data-source is an attribute of the element .clone
-this options allows for a unique endpoint per clone HTML object, 1 clone = 1 endpoint
-it also allows for multiple items filled into one pocket with unique data sources
-=EXAMPLE
+data-data-source is a required attribute of the element .clone
+    the value of data-data-source is the endpoint used to request data per clone HTML object, 1 clone = 1 endpoint
+        the endpoint can be local /backend/products.json or external https://api.com/products
+    each .clone within the parent .pocket will be automatically filled with the request data
+    *the value of data-data-source is used as the name of the strg object and available through strg.get(name)
+=OPTIONAL
+data-data-source-name can be used to overwrite the default name for the data object
+    *the value of data-data-source-name is then used as the name of the strg object and available through strg.get(name)
+data-normalize-response-callback is used for passing the response data through a data normalizing function creating data that can be used by pckt, i.e., {response:[{...}]}
+    a corresponding pckt function must be available, i.e., using data-normalize-response-callback="product_cleanup" would call the custom function pckt.product_cleanup(name,obj) prior to cloning
+=EXAMPLE 1
 <items>
     <item id="endpoint-display">
         <!-- This item will be added to the pocket and filled with data from the dataSource -->
@@ -13,7 +20,30 @@ it also allows for multiple items filled into one pocket with unique data source
         {{rec:name}} {{rec:nameLast}}
         </div>
     </item>
+    <item id="product-display">
+        <!-- This item will be added to the pocket and filled with data from the dataSource, using the {{rec:}} method -->
+        <div class="clone" data-data-source="https://api.com/products" data-data-source-name="products" data-normalize-response-callback="product_cleanup">
+            <div class="card">
+                {{rec:id}} {{rec:name}}
+                <hr>
+                {{rec:desc}}
+            </div>
+        </div>
+    </item>
+    <item id="user">
+        <!-- This item will be added to the pocket and filled with data from the dataSource (using the <span> method) -->
+        <div class="clone" data-data-source="https://api.com/users" data-data-source-name="users" data-normalize-response-callback="api_cleanup">
+            <div class="card">
+                <span data-member="id" data-in="true"></span>
+                <!-- the data attribute data-in is optional when "true" -->
+                <span data-member="name"></span>
+                <hr>
+                <span data-member="desc" data-in="true" data-up="true" data-on="true"></span>
+            </div>
+        </div>
+    </item>
 </items>
+
 
 =OVERRIDE (data)
 data-data-source can also be placed in .pocket and overrides the .clone data-data-source, this allows for reuse of the HTML object with different data sources (1 clone = many endpoints)

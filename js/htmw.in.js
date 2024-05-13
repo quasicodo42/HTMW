@@ -1,8 +1,8 @@
-$(function() {
+document.addEventListener("DOMContentLoaded", function() {
     pckt.fillPockets();
 });
 
-let strg = (function () {
+const strg = (function () {
     let repo = {};
 
     function isSupported(storage, test) {
@@ -138,7 +138,7 @@ let strg = (function () {
     }
 })();
 
-let scrb = (function () {
+const scrb = (function () {
     let regex        = {};
     regex.email      = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     regex.numbers    = /[^0-9]/g;
@@ -348,62 +348,87 @@ let scrb = (function () {
     }
 })();
 
-/**
- *
- * @type {{loadingTs, getData, getHtml, emptyPockets, fillPockets, addItems, cloneRecords, status, id}}
- */
-let pckt = (function(id) {
+const pckt = (function(id) {
     let loading     = {html:[],data:[],ts:Date.now()};
     let queued      = {html:[],data:[],ts:Date.now()};
     let callbacks   = {html:{},data:{},ts:Date.now()};
     let maxLoadTime = 2000; //milliseconds
-    let jsonDir     = ""; //"/app.lists/json/";
-    let prefix      = "pa-";
-    let recordsAt   = "response";
+    let jsonDir     = ''; // "/app.lists/json/";
+    let prefix      = 'pa-';
+    let recordsAt   = 'response';
     return{
+        get maxLoadTime() {
+            return maxLoadTime;
+        },
+        set maxLoadTime(value) {
+            maxLoadTime = (+value || 2000);
+        },
+        get jsonDir() {
+            return jsonDir;
+        },
+        set jsonDir(value) {
+            jsonDir = value;
+        },
+        get prefix() {
+            return prefix;
+        },
+        set prefix(value) {
+            prefix = value;
+        },
+        get recordsAt() {
+            return recordsAt;
+        },
+        set recordsAt(value) {
+            recordsAt = value;
+        },
         getData: function(name, post, callback){
             //if queued do nothing
             if(queued.data.includes(name)){
                 return;
             }
-            let request;
-            //let nname = scrb.format(name,"alphaonly"); //TODO compare and alert, use clean
+
             strg.del(name);
             queued.data.push(name);
-            if(post){
-                request = $.post((jsonDir ? jsonDir + name + ".json" : name), post || {}, function(dataObj){},"json")
-            }else{
-                request = $.get((jsonDir ? jsonDir + name + ".json" : name), {}, function(dataObj){},"json")
-            }
-            request.done(function (dataObj) {
-                let fullPocket = $("[data-data-source='" + name + "']");
-                queued.data = queued.data.filter(item => item !== name);
-                strg.set(name,dataObj);
-                //is it a modal report popup OR assigned to a pocket on the backend OR to be newly filled
-                if(dataObj.hasOwnProperty("config") && dataObj.config.hasOwnProperty("pocket")){
-                    $(".pocket[name=" + dataObj.config.pocket + "]").data("items",(dataObj.config.item || name));
-                    pckt.emptyPockets(dataObj.config.pocket,1);
-                }else if(dataObj.hasOwnProperty("config") && dataObj.config.hasOwnProperty("isModalPopup") && dataObj.config.isModalPopup){
-                    $("#modalReport").remove();
-                    var item = $("<item id='modalReport'>").html(pckt.buildItem("tabular",name));
-                    $("items").append(item);
-                    $(".pocket[name=modal]").data("items","modalReport");
-                    pckt.emptyPockets("modal",1);
-                }else if($(fullPocket).length){
-                    pckt.emptyPockets($(fullPocket).closest(".pocket").attr("name"),1);
-                }
-            }).fail(function (error) {
-                //error
-                console.log(error);
-            }).always(function (obj) {
-                callbacks.data[name] = obj;
-                if(callback && typeof pckt[callback] === "function"){
-                    setTimeout(function (){
-                        pckt[callback](obj);
-                    })
-                }
-                pckt.isFinished();
-            });
+
+            endpointFetcher(true,(jsonDir ? jsonDir + name + ".json" : name), (post || {}))
+                .then((dataObj) => {
+                    let fullPocket = $("[data-data-source='" + name + "']");
+                    const fullPocketData = $(fullPocket).data();
+                    if(fullPocketData){
+                        if(fullPocketData.normalizeResponseCallback && typeof pckt[fullPocketData.normalizeResponseCallback] === "function"){
+                            dataObj = pckt[fullPocketData.normalizeResponseCallback]((fullPocketData.dataSourceName || name),dataObj);
+                        }
+                        if(fullPocketData.dataSourceName){
+                            strg.set(fullPocketData.dataSourceName,dataObj);
+                        }
+                    }
+                    queued.data = queued.data.filter(item => item !== name);
+                    strg.set(name,dataObj);
+                    //is it a modal report popup OR assigned to a pocket on the backend OR to be newly filled
+                    if(dataObj.hasOwnProperty("config") && dataObj.config.hasOwnProperty("pocket")){
+                        $(".pocket[name=" + dataObj.config.pocket + "]").data("items",(dataObj.config.item || name));
+                        pckt.emptyPockets(dataObj.config.pocket,1);
+                    }else if(dataObj.hasOwnProperty("config") && dataObj.config.hasOwnProperty("isModalPopup") && dataObj.config.isModalPopup){
+                        $("#modalReport").remove();
+                        var item = $("<item id='modalReport'>").html(pckt.buildItem("tabular",name));
+                        $("items").append(item);
+                        $(".pocket[name=modal]").data("items","modalReport");
+                        pckt.emptyPockets("modal",1);
+                    }else if($(fullPocket).length){
+                        pckt.emptyPockets($(fullPocket).closest(".pocket").attr("name"),1);
+                    }
+                    // finalize call
+                    callbacks.data[name] = dataObj;
+                    if(callback && typeof pckt[callback] === "function"){
+                        setTimeout(function (){
+                            pckt[callback](dataObj);
+                        })
+                    }
+                    pckt.isFinished();
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         },
         getHtml: function(name, pocketData, callback){
             $("#" + name).remove();
@@ -417,22 +442,24 @@ let pckt = (function(id) {
                 endpoint = pocketData[override];
             }
             queued.html.push(name);
-            $.get(endpoint, {}, function(htmlStr){
-            }).done(function (htmlStr) {
-                queued.html = queued.html.filter(item => item !== name);
-                var item = $("<item id='" + name + "'>").html(htmlStr);
-                $("items").append(item);
-            }).fail(function (error) {
-                //error
-            }).always(function (obj) {
-                callbacks.html[name] = obj;
-                if(callback && typeof pckt[callback] === "function"){
-                    setTimeout(function (){
-                        pckt[callback](obj);
-                    })
-                }
-                pckt.isFinished();
-            });
+
+            endpointFetcher(false,endpoint)
+                .then((htmlStr) => {
+                    queued.html = queued.html.filter(item => item !== name);
+                    var item = $("<item id='" + name + "'>").html(htmlStr);
+                    $("items").append(item);
+                    //finalize call
+                    callbacks.html[name] = htmlStr;
+                    if(callback && typeof pckt[callback] === "function"){
+                        setTimeout(function (){
+                            pckt[callback](htmlStr);
+                        })
+                    }
+                    pckt.isFinished();
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         },
         emptyPockets: function (pocketNames,defaultFillFlag) {
             (pocketNames || "").split(",").forEach(function (pocketName){
@@ -605,27 +632,46 @@ let pckt = (function(id) {
                 var cloned = $($(clone)[0].outerHTML).empty().data({object:obj,cleanName:cleanName}).toggleClass("clone clone-container " +  cleanName).attr("data-ts",Date.now());
                 if(obj.recordsHeader.length && obj.records.length){
                     obj.records.forEach(function (record,i) {
-                        const recObj  = Object.fromEntries(obj.recordsHeader.map((_, i) => [obj.recordsHeader[i], record[i]]));
                         let cloneHtml = $($(clone)[0].innerHTML);
                         if(!cloneHtml) return;
-                        let report = {notFound:[],nulls:[]};
+                        const recObj  = Object.fromEntries(obj.recordsHeader.map((_, i) => [obj.recordsHeader[i], record[i]]));
+                        let cloneData = {index:i,record:record,recordHeader:obj.recordsHeader,rec:recObj,report:null,objectName:data.dataSource,cleanName:cleanName};
+                        let report    = {notFound:[],nulls:[]};
                         record.forEach(function (delta,ii) {
                             let name  = obj.recordsHeader[ii];
                             let find  = '{{rec:' + name + '}}';
                             cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(delta))
+                                //span all-in-one 
+                                .find("span[data-member=" + name + "]").each(function () {
+                                    const data = $(this).data();
+                                    if(data.on){ //as a data attribute
+                                        $(this).parent().attr('data-' + name.match(/[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g).join('-'), delta);
+                                        cloneData[name] = delta;
+                                    }
+                                    if(data.up){ //as an element attribute
+                                        $(this).parent().attr(name, delta);
+                                    }
+                                    if(data.hasOwnProperty('in') && data.in === false){
+                                        $(this).remove();
+                                    }else{
+                                        $(this).html(delta);
+                                    }
+                                }).end()
+                                //legacy functionality, deprecated as of 20240513, use <span>
                                 //in = add delta to UI
                                 .find("in[name=" + name + "]").each(function () {
                                     //get what's in there + $(this).html()
-                                    let span = $("<span>").html(delta).data({name:name,value:delta,delta:delta});
+                                    let span = $("<span>").html(delta);
                                     $(this).replaceWith(span);
                                 }).end()
                                 //up = add delta as attribute on parent
                                 .find("up[name=" + name + "]").each(function () {
-                                    $(this).parent().attr(name,delta).end().remove();
+                                    $(this).parent().attr(name, delta).end().remove();
                                 }).end()
                                 //on = add delta as data on parent
                                 .find("on[name=" + name + "]").each(function () {
-                                    $(this).parent().data(name,delta).end().remove();
+                                    $(this).parent().attr('data-' + name.match(/[A-Z]?[a-z]+|[0-9]+|[A-Z]+(?![a-z])/g).join('-'), delta).end().remove();
+                                    cloneData[name] = delta;
                                 }).end();
                         });
                         ($(cloneHtml)[0].outerHTML.match(/[^{\{]+(?=}\})/g) || []).forEach(function(placeholder){
@@ -660,7 +706,8 @@ let pckt = (function(id) {
                             }
                             cloneHtml = $(($(cloneHtml)[0].outerHTML).split(find).join(value));
                         });
-                        $(cloneHtml).toggleClass('cloned').data({index:i,record:record,recordHeader:obj.recordsHeader,rec:recObj,report:report,objectName:data.dataSource,cleanName:cleanName});
+                        cloneData.report = report;
+                        $(cloneHtml).toggleClass('cloned').data(cloneData);
                         cloned = $(cloned).append(cloneHtml);
                     })
                     callbacks.data[name] = obj;
@@ -723,10 +770,9 @@ let pckt = (function(id) {
             return id;
         }
     }
-})(0);
+})(41);
 
-
-let strc = (function () {
+const strc = (function () {
     return {
         sortObj: function (object,key,type) {
             object = object || [{}];
@@ -759,4 +805,40 @@ let strc = (function () {
         }
     }
 })();
-//ok
+
+async function endpointFetcher(isJson = true, url = '', data = {}, headers = {}, asBody = false) {
+    // Defaults marked with *
+    let fetchParams = {
+        method: 'GET' , // *GET, POST, PUT, DELETE, etc.
+        //mode: "no-cors", // *cors, no-cors, same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: "same-origin", // *same-origin, include, omit
+        redirect: "follow", // manual, *follow, error
+        //referrerPolicy: "no-referrer", // *no-referrer-when-downgrade, no-referrer, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url   
+    }
+
+    if(Object.entries(data).length){
+        fetchParams.method = 'POST';
+        if(asBody){
+            fetchParams.body   = JSON.stringify(data);
+        }else{
+            const formData = new FormData();
+            Object.entries(data).forEach(function(pair){
+                formData.append(pair[0], String(pair[1]));
+            })
+            fetchParams.body   = formData;
+        }
+    }
+
+    if(Object.entries(headers).length){
+        fetchParams.header = headers;
+    }
+
+    const response = await fetch(url, fetchParams);
+
+    if(isJson){
+        return response.json(); 
+    }else{
+        return response.text();
+    }
+}

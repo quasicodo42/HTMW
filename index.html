@@ -92,12 +92,17 @@
 
 <!-- Custom Javascript -->
 <script>
+    //pckt defaults setup, as needed
+    // pckt.recordsAt   = 'response';
+    // pckt.maxLoadTime = 1000;
+    // pckt.jsonDir     = 'js/json/';
+
     /*
     custom scripts below are created to help the flow as needed
     the below code is for advanced functionality demonstration purposes
      */
 
-    //preload 3rd party data, using the callback "productDataFormat" (custom function)
+    //preload 3rd party data, using the callback "productDataFormat" (user defined function)
     pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
     //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
     pckt.productDataFormat = function (obj){
@@ -109,9 +114,20 @@
         }
     }
 
-    //this function is called by default, if available, when all pockets are filled (or the process is complete)
+    //this user defined function is called by default, if available, when all pockets are filled (or the process is complete)
     pckt.callback = function(name,obj){
         console.log(name,strg.del(name));
+    }
+
+    //this user defined function is called to clean up an external data structure to allow normal processing by pckt functionality
+    pckt.comments_cleanup = function(name,obj){
+        console.log('Normalizing comment structure from external endpoint (' + name + ')');
+        return {response:obj.comments};
+    }
+
+    pckt.quotes_cleanup = function(name,obj){
+        console.log('Normalizing quote structure from external endpoint (' + name + ')');
+        return {response:obj.quotes};
     }
 </script>
 
