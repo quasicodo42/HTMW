@@ -99,9 +99,38 @@
 
     /*
     custom scripts below are created to help the flow as needed
-    the below code is for advanced functionality demonstration purposes
+    the below code is for advanced functionality demonstration purposes, and optional
      */
 
+    //this self-aware function is called BEFORE a data request is made, if available, and used to establish any logic pre-request
+    pckt.preflight = function(name){
+        console.log('Running self-aware preflight for (' + name + ')');
+    }
+
+    //this self-aware function is called AFTER a data request is made, if available, and used to establish any logic post-request, etc.
+    pckt.postflight = function(name,obj){
+        console.log('Running self-aware postflight for (' + name + ')', obj);
+        return obj;
+    }
+
+    //this user defined function is called by default, if available, when all pockets are filled (or the process is complete)
+    pckt.callback = function(name,obj){
+        console.log(name,strg.del(name));
+    }
+
+    //these user-defined functions, if available, override pckt.postflight() and are called post-request
+    //tipically used to clean up an external data structure to allow standardized processing by pckt functionality, etc.
+    //useage as .clone attr: data-postflight="comments_cleanup"
+    pckt.comments_cleanup = function(name,obj){
+        console.log('Running user-defined postflight for (' + name + ')', obj);
+        return {response:obj.comments};
+    }
+    //useage as .clone attr: data-postflight="quotes_cleanup"
+    pckt.quotes_cleanup = function(name,obj){
+        console.log('Running user-defined postflight for (' + name + ')', obj);
+        return {response:obj.quotes};
+    }
+    
     //preload 3rd party data, using the callback "productDataFormat" (user defined function)
     pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
     //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
@@ -112,22 +141,6 @@
             //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
             strg.set("products",{response:newObj.products});
         }
-    }
-
-    //this user defined function is called by default, if available, when all pockets are filled (or the process is complete)
-    pckt.callback = function(name,obj){
-        console.log(name,strg.del(name));
-    }
-
-    //this user defined function is called to clean up an external data structure to allow normal processing by pckt functionality
-    pckt.comments_cleanup = function(name,obj){
-        console.log('Normalizing comment structure from external endpoint (' + name + ')');
-        return {response:obj.comments};
-    }
-
-    pckt.quotes_cleanup = function(name,obj){
-        console.log('Normalizing quote structure from external endpoint (' + name + ')');
-        return {response:obj.quotes};
     }
 </script>
 

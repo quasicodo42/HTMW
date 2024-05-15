@@ -10,8 +10,9 @@ data-data-source is a required attribute of the element .clone
 =OPTIONAL
 data-data-source-name can be used to overwrite the default name for the data object
     *the value of data-data-source-name is then used as the name of the strg object and available through strg.get(name)
-data-normalize-response-callback is used for passing the response data through a data normalizing function creating data that can be used by pckt, i.e., {response:[{...}]}
-    a corresponding pckt function must be available, i.e., using data-normalize-response-callback="product_cleanup" would call the custom function pckt.product_cleanup(name,obj) prior to cloning
+data-postflight is used for passing the response data through a data normalizing function creating data that can be used by pckt, i.e., {response:[{...}]}
+    a corresponding pckt function must be available, i.e., using data-postflight="product_cleanup" would call the custom function pckt.product_cleanup(name,obj) prior to cloning
+data-preflight is used for running a function before the call where global settings can be set or prelogic can run
 =EXAMPLE 1
 <items>
     <item id="endpoint-display">
@@ -22,7 +23,7 @@ data-normalize-response-callback is used for passing the response data through a
     </item>
     <item id="product-display">
         <!-- This item will be added to the pocket and filled with data from the dataSource, using the {{rec:}} method -->
-        <div class="clone" data-data-source="https://api.com/products" data-data-source-name="products" data-normalize-response-callback="product_cleanup">
+        <div class="clone" data-data-source="https://api.com/products" data-data-source-name="products" data-postflight="product_cleanup">
             <div class="card">
                 {{rec:id}} {{rec:name}}
                 <hr>
@@ -32,7 +33,7 @@ data-normalize-response-callback is used for passing the response data through a
     </item>
     <item id="user">
         <!-- This item will be added to the pocket and filled with data from the dataSource (using the <span> method) -->
-        <div class="clone" data-data-source="https://api.com/users" data-data-source-name="users" data-normalize-response-callback="api_cleanup">
+        <div class="clone" data-data-source="https://api.com/users" data-data-source-name="users" data-preflight="api_cleanup" data-postflight="api_cleanup">
             <div class="card">
                 <span data-member="id" data-in="true"></span>
                 <!-- the data attribute data-in is optional when "true" -->

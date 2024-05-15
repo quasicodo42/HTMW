@@ -8,7 +8,7 @@
 
 <h5 class="mt-2">Comments, real-time</h5>
 <p>The following data is from external JSON. It has been called in real-time, reformatted in-process and renamed to <span class="fst-italic">comments</span> for proper framework consumption.</p>
-<div class="clone" data-data-source="https://dummyjson.com/comments?limit=10" data-data-source-name="comments" data-normalize-response-callback="comments_cleanup">
+<div class="clone" data-data-source="https://dummyjson.com/comments?limit=10" data-data-source-name="comments" data-postflight="comments_cleanup">
     <div class="col">
         {{aug:index}}) {{rec:user.username}}: {{rec:body}} 
         <!-- these HTML5 TAGS are also available which add the data to various places in the DOM -->
@@ -23,7 +23,7 @@
 
 <h5 class="mt-2">Quotes, real-time</h5>
 <p>The following data is from external JSON. It has been called in real-time, reformatted in-process and renamed to <span class="fst-italic">quotes</span> for proper framework consumption.</p>
-<div class="clone" data-data-source="https://dummyjson.com/quotes?limit=1" data-data-source-name="quotes" data-normalize-response-callback="quotes_cleanup">
+<div class="clone" data-data-source="https://dummyjson.com/quotes?limit=1" data-data-source-name="quotes" data-postflight="quotes_cleanup">
     <div class="col">
         {{aug:index}}) <span data-member="quote"></span> — <span data-member="author"></span>
         <!-- <span> will be used to contain the corresponding value from the record -->

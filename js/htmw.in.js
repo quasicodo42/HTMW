@@ -356,7 +356,14 @@ const pckt = (function(id) {
     let jsonDir     = ''; // "/app.lists/json/";
     let prefix      = 'pa-';
     let recordsAt   = 'response';
+    let dependencies= {};
     return{
+        get dependencies() {
+            return dependencies;
+        },
+        set dependencies(value) {
+            dependencies[value.name] = value.value;
+        },
         get maxLoadTime() {
             return maxLoadTime;
         },
@@ -387,23 +394,44 @@ const pckt = (function(id) {
                 return;
             }
 
+            let fullPocket       = $("[data-data-source='" + name + "']").not($('items').find("[data-data-source='" + name + "']"));
+            const fullPocketData = $(fullPocket).data();
+            const hasPreflight   = (fullPocketData && fullPocketData.hasOwnProperty('preflight') && typeof pckt[fullPocketData.preflight] === "function");
+            const hasPostflight  = (fullPocketData && fullPocketData.hasOwnProperty('postflight') && typeof pckt[fullPocketData.postflight] === "function");
+            const hasAltName     = (fullPocketData && fullPocketData.hasOwnProperty('dataSourceName'));
+            const altName        = (hasAltName ? fullPocketData.dataSourceName : null);
+
+            if(hasPreflight){
+                dataObj = pckt[fullPocketData.preflight]((altName || name));
+            }else if(typeof pckt.preflight === "function"){
+                pckt.preflight((altName || name));
+            }
+
+            //add to queue and delete
             strg.del(name);
             queued.data.push(name);
+            if(hasAltName){
+                queued.data.push(altName);
+                strg.del(altName);
+            }
 
             endpointFetcher(true,(jsonDir ? jsonDir + name + ".json" : name), (post || {}))
                 .then((dataObj) => {
-                    let fullPocket = $("[data-data-source='" + name + "']");
-                    const fullPocketData = $(fullPocket).data();
-                    if(fullPocketData){
-                        if(fullPocketData.normalizeResponseCallback && typeof pckt[fullPocketData.normalizeResponseCallback] === "function"){
-                            dataObj = pckt[fullPocketData.normalizeResponseCallback]((fullPocketData.dataSourceName || name),dataObj);
-                        }
-                        if(fullPocketData.dataSourceName){
-                            strg.set(fullPocketData.dataSourceName,dataObj);
-                        }
+
+                    if(hasPostflight){
+                        dataObj = pckt[fullPocketData.postflight]((altName || name), dataObj);
+                    }else if(typeof pckt.postflight === "function"){
+                        dataObj = pckt.postflight((altName || name), dataObj);
                     }
+
+                    //remove from queue and set
                     queued.data = queued.data.filter(item => item !== name);
                     strg.set(name,dataObj);
+                    if(hasAltName){
+                        queued.data = queued.data.filter(item => item !== altName);
+                        strg.set(fullPocketData.dataSourceName,dataObj);
+                    }
+
                     //is it a modal report popup OR assigned to a pocket on the backend OR to be newly filled
                     if(dataObj.hasOwnProperty("config") && dataObj.config.hasOwnProperty("pocket")){
                         $(".pocket[name=" + dataObj.config.pocket + "]").data("items",(dataObj.config.item || name));
@@ -415,7 +443,7 @@ const pckt = (function(id) {
                         $(".pocket[name=modal]").data("items","modalReport");
                         pckt.emptyPockets("modal",1);
                     }else if($(fullPocket).length){
-                        pckt.emptyPockets($(fullPocket).closest(".pocket").attr("name"),1);
+                        pckt.emptyPockets($("[data-data-source='" + name + "']").not($('items').find("[data-data-source='" + name + "']")).closest(".pocket").attr("name"),1);
                     }
                     // finalize call
                     callbacks.data[name] = dataObj;
@@ -627,6 +655,9 @@ const pckt = (function(id) {
                         //data is not recognized, abort
                         return;
                     }
+                }else if(!obj || typeof obj === 'string'){
+                    //no/bad data, abort
+                    return;
                 }
 
                 var cloned = $($(clone)[0].outerHTML).empty().data({object:obj,cleanName:cleanName}).toggleClass("clone clone-container " +  cleanName).attr("data-ts",Date.now());
