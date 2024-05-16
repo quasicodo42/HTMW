@@ -356,13 +356,13 @@ const pckt = (function(id) {
     let jsonDir     = ''; // "/app.lists/json/";
     let prefix      = 'pa-';
     let recordsAt   = 'response';
-    let dependencies= {};
+    let udSettings  = {};
     return{
-        get dependencies() {
-            return dependencies;
+        get udSettings() {
+            return udSettings;
         },
-        set dependencies(value) {
-            dependencies[value.name] = value.value;
+        set udSettings(value) {
+            udSettings[value.name] = value.value;
         },
         get maxLoadTime() {
             return maxLoadTime;
@@ -848,16 +848,43 @@ async function endpointFetcher(isJson = true, url = '', data = {}, headers = {},
         //referrerPolicy: "no-referrer", // *no-referrer-when-downgrade, no-referrer, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url   
     }
 
+    //override using pckt.udSettings
+    if('fetchParams' in pckt.udSettings){
+        fetchParams = pckt.udSettings.fetchParams;
+        pckt.udSettings = {name:'fetchParams',value:undefined};
+    }else{
+        if('data' in pckt.udSettings){
+            data = pckt.udSettings.data;
+            pckt.udSettings = {name:'data',value:undefined};
+        }
+        if('headers' in pckt.udSettings){
+            headers = pckt.udSettings.headers;
+            pckt.udSettings = {name:'data',value:undefined};
+        }
+    }
+    if('isJson' in pckt.udSettings){
+        isJson = pckt.udSettings.isJson;
+        pckt.udSettings = {name:'isJson',value:undefined};
+    }
+    if('url' in pckt.udSettings){
+        url = pckt.udSettings.url;
+        pckt.udSettings = {name:'url',value:undefined};
+    }
+    if('asBody' in pckt.udSettings){
+        asBody = pckt.udSettings.asBody;
+        pckt.udSettings = {name:'asBody',value:undefined};
+    }
+    
     if(Object.entries(data).length){
         fetchParams.method = 'POST';
         if(asBody){
-            fetchParams.body   = JSON.stringify(data);
+            fetchParams.body = JSON.stringify(data);
         }else{
             const formData = new FormData();
             Object.entries(data).forEach(function(pair){
                 formData.append(pair[0], String(pair[1]));
             })
-            fetchParams.body   = formData;
+            fetchParams.body = formData;
         }
     }
 

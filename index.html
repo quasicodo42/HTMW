@@ -105,11 +105,17 @@
     //this self-aware function is called BEFORE a data request is made, if available, and used to establish any logic pre-request
     pckt.preflight = function(name){
         console.log('Running self-aware preflight for (' + name + ')');
+        switch(name){
+            case 'quotes':
+                //overrides: grab a different URL than the one in the .clone settings
+                pckt.udSettings = {name:'url',value:'https://dummyjson.com/quotes?limit=2'};
+                break;
+        }
     }
 
     //this self-aware function is called AFTER a data request is made, if available, and used to establish any logic post-request, etc.
     pckt.postflight = function(name,obj){
-        console.log('Running self-aware postflight for (' + name + ')', obj);
+        console.log('Running self-aware postflight for (' + name + ')');
         return obj;
     }
 
@@ -122,12 +128,12 @@
     //tipically used to clean up an external data structure to allow standardized processing by pckt functionality, etc.
     //useage as .clone attr: data-postflight="comments_cleanup"
     pckt.comments_cleanup = function(name,obj){
-        console.log('Running user-defined postflight for (' + name + ')', obj);
+        console.log('Running user-defined postflight for (' + name + ')');
         return {response:obj.comments};
     }
     //useage as .clone attr: data-postflight="quotes_cleanup"
     pckt.quotes_cleanup = function(name,obj){
-        console.log('Running user-defined postflight for (' + name + ')', obj);
+        console.log('Running user-defined postflight for (' + name + ')');
         return {response:obj.quotes};
     }
     
