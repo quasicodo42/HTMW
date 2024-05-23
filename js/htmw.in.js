@@ -612,11 +612,14 @@ const pckt = (function(id) {
             if(!isNaN(+member)){
                 member = +member; //try an index
             }
-            if(!digList.length){
-                return (obj.hasOwnProperty(member) ? obj[member] : undefined);
-            }else{
-                return pckt.objectDig(obj[member],digList);
+            if(obj && obj.hasOwnProperty(member)){
+                if(!digList.length){
+                    return obj[member];
+                }else{
+                    return pckt.objectDig(obj[member], digList);
+                }
             }
+            return undefined;
         },
         cloneRecords: function () {
             $(".pocket").find(".clone").each(function () {
