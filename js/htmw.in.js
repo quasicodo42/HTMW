@@ -424,6 +424,8 @@ const pckt = (function(id) {
                         dataObj = pckt.postflight((altName || name), dataObj);
                     }
 
+                    dataObj = dataObj || {};
+
                     //remove from queue and set
                     queued.data = queued.data.filter(item => item !== name);
                     strg.set(name,dataObj);
