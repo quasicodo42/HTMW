@@ -681,7 +681,7 @@ const pckt = (function(id) {
                 }
 
                 var cloned = $($(clone)[0].outerHTML).empty().data({object:obj,cleanName:cleanName}).toggleClass("clone clone-container " +  cleanName).attr("data-ts",Date.now());
-                if(obj.recordsHeader.length && obj.records.length){
+                if(obj.hasOwnProperty('recordsHeader') && obj.recordsHeader.length && obj.hasOwnProperty('records') && obj.records.length){
                     obj.records.forEach(function (record,i) {
                         let cloneHtml = $($(clone)[0].innerHTML);
                         if(!cloneHtml) return;
