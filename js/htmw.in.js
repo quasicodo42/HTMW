@@ -1,5 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
     pckt.fillPockets();
+
+    //init
+    const itemsData = $("items").data() || {};
+    if(!strg.get("softCacheItems") && itemsData.hasOwnProperty("softCacheItems")){
+        strg.set("softCacheItems",itemsData.softCacheItems.split(','));
+    }
+    if(!strg.get("noCacheItems") && itemsData.hasOwnProperty("noCacheItems")){
+        strg.set("noCacheItems",itemsData.noCacheItems.split(','));
+    }
 });
 
 const strg = (function () {
@@ -476,8 +485,14 @@ const pckt = (function(id) {
             endpointFetcher(false,endpoint)
                 .then((htmlStr) => {
                     queued.html = queued.html.filter(item => item !== name);
-                    var item = $("<item id='" + name + "'>").html(htmlStr);
-                    $("items").append(item);
+                    let item = $("<item id='" + name + "'>").html(htmlStr);
+                    if((strg.get("softCacheItems") || []).includes(name) || $(item).find('[id]').length || !$('items').length) {
+                        //softCacheItems
+                        strg.mAdd("items",name,item[0].outerHTML);
+                    }else{
+                        //hardCacheItems
+                        $("items").append(item);
+                    }
                     //finalize call
                     callbacks.html[name] = htmlStr;
                     if(callback && typeof pckt[callback] === "function"){
@@ -503,7 +518,7 @@ const pckt = (function(id) {
         fillPockets: function () {
             $(".pocket").each(function () {
                 let contents        = $(this)[0].innerHTML.trim();
-                let defaultContents = $("items").find("item#default").html();
+                let defaultContents = $("items").find("item#default").html() || 'Loading...';
                 let toBeCloned      = $(this).find(".clone").length;
                 let beenCloned      = $(this).find(".cloned").length;
                 if(!beenCloned && (!contents || contents === defaultContents || toBeCloned)){
@@ -545,8 +560,8 @@ const pckt = (function(id) {
                 pckt.emptyPockets(pocketName);
             }
             itemIdsArr.forEach(function (itemId) {
-                var item     = $("items").find("item#" + itemId);
-                var itemData = $(item).data();
+                let item     = (strg.get("items") ? (strg.get("items")[itemId] || $("items").find("item#" + itemId)) : $("items").find("item#" + itemId));
+                let itemData = $(item).data();
                 //add to loading - html
                 if(!(loading.html.includes(itemId))){
                     loading.html.push(itemId);
@@ -568,7 +583,7 @@ const pckt = (function(id) {
                     }
                 }else{
                     //loading...
-                    item = $("items").find("item#default");
+                    item = $("items").find("item#default").length ? $("items").find("item#default") : $('<item>').text('Loading...');
                     //grab the missing item (html)
                     pckt.getHtml(itemId,pocketData);
                 }
@@ -879,7 +894,7 @@ async function endpointFetcher(isJson = true, url = '', data = {}, headers = {},
         asBody = pckt.udSettings.asBody;
         pckt.udSettings = {name:'asBody',value:undefined};
     }
-    
+
     if(Object.entries(data).length){
         fetchParams.method = 'POST';
         if(asBody){
@@ -900,7 +915,7 @@ async function endpointFetcher(isJson = true, url = '', data = {}, headers = {},
     const response = await fetch(url, fetchParams);
 
     if(isJson){
-        return response.json(); 
+        return response.json();
     }else{
         return response.text();
     }

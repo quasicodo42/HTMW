@@ -100,3 +100,8 @@ dev
 CORS Help
 https://stackoverflow.com/questions/10752055/cross-origin-requests-are-only-supported-for-http-error-when-loading-a-local
 https://stackoverflow.com/questions/18586921/how-to-launch-html-using-chrome-at-allow-file-access-from-files-mode
+
+====
+bugs
+====
+if the clone innerHtml has a comment as the first item cloning will not work, the first item has to be the html to be cloned.

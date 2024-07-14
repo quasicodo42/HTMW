@@ -1,6 +1,16 @@
 {
   "response": [
     {
+      "website":"/sample.htm",
+      "name":"Sample DL (ALT+Click)",
+      "target":"_self"
+    },
+    {
+      "website":"/sample.minimum.htm",
+      "name":"Mini DL (ALT+Click)",
+      "target":"_self"
+    },
+    {
       "website":"http://htmw.in",
       "name":"HTMW Basics",
       "target":"_self"
