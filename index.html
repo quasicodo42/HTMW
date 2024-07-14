@@ -24,7 +24,7 @@
 
     <!--pocket sample 1-->
     <!--html from a request-->
-    <h1 class="pocket" data-items="demo" data-override-demo="/html/view-001/demo.html"></h1>
+    <h1 class="pocket" data-items="demo1" data-override-demo1="/html/view-001/demo.html"></h1>
     <!-- Item will be placed inside the tag and filled with data from this dataSource -->
 
     <!--pocket sample 2-->
@@ -37,7 +37,7 @@
 
     <!--pocket sample 4-->
     <!--html from a request w/data (dynamic cloning)-->
-    <div class="pocket" data-items="democlone" data-override-democlone="/html/view-001/democlone.html"></div>
+    <div class="pocket" data-items="democlone1" data-override-democlone1="/html/view-001/democlone.html"></div>
 
 </div>
 
@@ -48,7 +48,7 @@
 <!-- pocket items -->
 <!-- this is an HTML library of snippets -->
 <!-- used to create the layout as needed -->
-<items>
+<items data-soft-cache-items="demo1,democlone1">
     <item id="default">..loading</item>
     <item id="frontend-html">
         <p>Welcome to the <a href="https://github.com/quasicodo42/HTMW" target="_blank"><span class="fw-bold">HTMW</span></a> demo, a simple frontend display architecture for creating single-page web apps.</p>
@@ -92,52 +92,12 @@
 
 <!-- Custom Javascript -->
 <script>
-    //pckt defaults setup, as needed
-    // pckt.recordsAt   = 'response';
-    // pckt.maxLoadTime = 1000;
-    // pckt.jsonDir     = 'js/json/';
-
     /*
     custom scripts below are created to help the flow as needed
-    the below code is for advanced functionality demonstration purposes, and optional
+    the below code is for advanced functionality demonstration purposes
      */
 
-    //this self-aware function is called BEFORE a data request is made, if available, and used to establish any logic pre-request
-    pckt.preflight = function(name){
-        //console.log('Running self-aware preflight for (' + name + ')');
-        switch(name){
-            case 'quotes':
-                //overrides: grab a different URL than the one in the .clone settings
-                pckt.udSettings = {name:'url',value:'https://dummyjson.com/quotes?limit=2'};
-                break;
-        }
-    }
-
-    //this self-aware function is called AFTER a data request is made, if available, and used to establish any logic post-request, etc.
-    pckt.postflight = function(name,obj){
-        //console.log('Running self-aware postflight for (' + name + ')');
-        return obj;
-    }
-
-    //this user defined function is called by default, if available, when all pockets are filled (or the process is complete)
-    pckt.callback = function(name,obj){
-        console.log(name,strg.del(name));
-    }
-
-    //these user-defined functions, if available, override pckt.postflight() and are called post-request
-    //tipically used to clean up an external data structure to allow standardized processing by pckt functionality, etc.
-    //useage as .clone attr: data-postflight="comments_cleanup"
-    pckt.comments_cleanup = function(name,obj){
-        //console.log('Running user-defined postflight for (' + name + ')');
-        return {response:obj.comments};
-    }
-    //useage as .clone attr: data-postflight="quotes_cleanup"
-    pckt.quotes_cleanup = function(name,obj){
-        //console.log('Running user-defined postflight for (' + name + ')');
-        return {response:obj.quotes};
-    }
-    
-    //preload 3rd party data, using the callback "productDataFormat" (user defined function)
+    //preload 3rd party data, using the callback "productDataFormat" (custom function)
     pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
     //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
     pckt.productDataFormat = function (obj){
@@ -147,6 +107,11 @@
             //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
             strg.set("products",{response:newObj.products});
         }
+    }
+
+    //this function is called by default, if available, when all pockets are filled (or the process is complete)
+    pckt.callback = function(name,obj){
+        console.log(name,strg.del(name));
     }
 </script>
 

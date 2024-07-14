@@ -1,22 +1,73 @@
-<h3>Sample Backend List (products)</h3>
-<p>This HTML is processed from a file found at <a href="/html/view-001/democlone.html" target="_blank">/html/view-001/democlone.html</a>. Then the cloned elements are rendered from a backend JSON request found at <a href="https://dummyjson.com/products" target="_blank">https://dummyjson.com/products</a>.</p>
-<p>The following data is from JSON. It has been preloaded, reformatted and renamed to <span class="fst-italic">products</span> for proper framework consumption.</p>
-<div class="row clone" data-data-source="products">
-    <div class="col-lg-3 col-md-6 col-sm-12">
-        <div class="item-header">
-            <span class="item-order">#{{aug:index}}</span>
-            <span class="item-title">{{rec:title}}</span>
-        </div>
-        <div class="item-brand">{{rec:brand}}</div>
-        <div class="item-image">
-            <img class="w-100 rounded" src="{{rec:thumbnail}}" alt="{{rec:title}}">
-        </div>
-        <div class="item-rating">
-            Rating: <span>{{rec:rating}}</span>
-        </div>
-        <div class="item-price">
-            Price: <span>${{rec:price}}</span>
-            <button class="btn btn-light float-end">Buy Now</button>
+<div class="container mt-5 mx-5"><h3>Sample Backend List (products)</h3></div>
+<div class="container p-5">
+    <p>
+        This HTML is processed from a file found at
+        <a href="/html/view-001/democlone.bnw.html" target="_blank"
+        >/html/view-001/democlone.bnw.html</a
+        >. Then the cloned elements are rendered from a backend JSON request found
+        at
+        <a
+                href="https://dummyjson.com/products?limit=8"
+                target="_blank"
+                rel="noopener"
+        >https://dummyjson.com/products?limit=8</a
+        >.
+    </p>
+</div>
+<div class="container border-bottom px-5">
+    <p>
+        The following data is from JSON. It has been preloaded, reformatted and
+        renamed to <span class="fst-italic">products</span> for proper framework
+        consumption.
+    </p>
+</div>
+<div class="container mt-2 px-5">
+    <div class="row row-cols gy-4 clone" data-data-source="products">
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card border-light rounded-2 shadow-sm h-100">
+                <div
+                        class="item-image w-100 card-img-top m-0 p-0"
+                        style="max-height: 40vh; object-fit: cover; overflow: hidden"
+                >
+                    <img
+                            class="embed-responsive-item img-fluid flex-grow-1 rounded-top m-0"
+                            src="{{rec:thumbnail}}"
+                            alt="{{rec:title}}"
+                    />
+                </div>
+                <div class="card-body w-100 bg-white mb-0" style="max-height: 60vh">
+                    <div class="item-brand flex-row card-title fw-bold fs-6 p-0 m-0">
+                        <p class="card-title fw-semibold fs-6">
+                            <span class="item-order fw-semibold">#{{aug:index}}</span> -
+                            {{rec:brand}}
+                        </p>
+                    </div>
+                    <div class="item-rating w-100">
+                        <p class="rating">rating: {{rec:rating}}</p>
+                    </div>
+                    <div class="item-price">
+                        <p class="price">
+                            Price: <span class="fw-bold">$ {{rec:price}}</span>
+                        </p>
+                    </div>
+                    <div class="item-description description w-100 card-text">
+                        {{rec:description}}
+                    </div>
+                    <div>
+                        <button
+                                type="button"
+                                class="btn card-btn btn-outline-primary btn-sm mt-3 rounded-3"
+                                style="
+                --bs-btn-padding-y: 0.5rem;
+                --bs-btn-padding-x: 0.5rem;
+                --bs-font-size: 0.6rem;
+              "
+                        >
+                            Buy Now
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

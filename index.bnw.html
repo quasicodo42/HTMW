@@ -5,83 +5,285 @@
     <title>Hello, world!</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="description" content="" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link rel="icon" href="favicon.png">
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            crossorigin="anonymous"
+    />
+    <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+            integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+            crossorigin="anonymous"
+    ></script>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&family=Slabo+27px&display=swap"
+            rel="stylesheet"
+    />
+    <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link rel="icon" href="favicon.png" />
+    <link rel="stylesheet" type="text/css" href="/css/style2.css" />
+    <script
+            src="https://kit.fontawesome.com/b78d07eeb0.js"
+            crossorigin="anonymous"
+    ></script>
     <style>
-        .clone, items {
+        .clone,
+        items {
             display: none;
         }
     </style>
 </head>
 <body>
-<script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script
+        src="https://code.jquery.com/jquery-3.7.0.min.js"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"
+></script>
 
-<!-- main body -->
-<div class="container mb-3">
+<!-- Page -->
+<div id="Home" class="container flex flex-column" onscroll="myFunction()">
+    <!-- Navbar for large screen >= 1000px -->
+    <div id="myNav">
+        <div class="logo">
+            <img src="images/view-001/logo.png" width="200" alt="" />
+        </div>
+        <div class="nav-link d-flex">
+            <ul>
+                <li class="nav-item">
+                    <a class="nav-link" href="#core">Core Languages</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#prod-list">Sample Product List</a>
+                </li>
+<!--                <li class="nav-item">-->
+<!--                    <a-->
+<!--                            class="nav-link"-->
+<!--                            href="#contact"-->
+<!--                            data-bs-toggle="modal"-->
+<!--                            data-bs-target="modal"-->
+<!--                    >Contact Us</a-->
+<!--                    >-->
+<!--                </li>-->
+            </ul>
+        </div>
+    </div>
+    <!-- Sidebar for small/medium screen < 1000px  -->
+    <div id="Sidebar" class="sidebar" data-anime="sidebar">
+        <a href="#core" id="one" class="text-info opacity-50 tooltip"
+        ><i class="fa-solid fa-folder-tree"></i
+        ><span class="tooltiptext">Core Languages</span></a
+        >
+        <a href="#prod-list" id="two" class="text-info opacity-50 tooltip"
+        ><i class="fa-solid fa-list"></i
+        ><span class="tooltiptext">Sample Product it</span></a
+        >
+<!--        <a href="#contact" id="three" class="text-info opacity-50 tooltip"-->
+<!--        ><i class="fa-solid fa-envelope"></i-->
+<!--        ><span class="tooltiptext">Contact Us</span></a-->
+<!--        >-->
+        <a href="https://htmw_in.140.live" target="_blank" id="three" class="text-info opacity-50 tooltip"
+        ><i class="fa-solid fa-hashtag"></i
+        ><span class="tooltiptext">Follow Us</span></a
+        >
+    </div>
+    <!-- END Navbar -->
+    <!-- Header -->
+    <div id="header">
+        <div class="item-header">
+            <img class="mt-4" src="images/view-001/logo.png" alt="" />
+        </div>
+        <!-- END Header -->
+        <!-- Intro -->
+        <!--pocket sample 1-->
+        <!--html from a request-->
+        <div class="w-100 d-flex">
+            <div class="typing-wrapper">
+                <h1
+                        class="pocket mars title typing"
+                        data-items="demo2"
+                        data-override-demo2="/html/view-001/demo.html"
+                ></h1>
+            </div>
+        </div>
+    </div>
+    <!-- END Intro -->
+    <!-- Main body -->
+    <div id="main">
+        <!-- Item will be placed inside the tag and filled with data from this dataSource -->
 
-    <img class="mt-2" src="images/view-001/logo.png" width="200" alt="">
+        <!--pocket sample 2-->
+        <!--html from an item-->
+        <div class="container">
+            <div class="pocket" data-items="frontend-html"></div>
+        </div>
 
-    <!--pocket sample 1-->
-    <!--html from a request-->
-    <h1 class="pocket" data-items="demo" data-override-demo="/html/view-001/demo.html"></h1>
-    <!-- Item will be placed inside the tag and filled with data from this dataSource -->
+        <!--pocket sample 3-->
+        <!--html from an item w/data (static cloning)-->
+        <div>
+            <div class="pocket" data-items="sample"></div>
+        </div>
 
-    <!--pocket sample 2-->
-    <!--html from an item-->
-    <div class="pocket" data-items="frontend-html"></div>
-
-    <!--pocket sample 3-->
-    <!--html from an item w/data (static cloning)-->
-    <div class="pocket" data-items="sample"></div>
-
-    <!--pocket sample 4-->
-    <!--html from a request w/data (dynamic cloning)-->
-    <div class="pocket" data-items="democlone" data-override-democlone="/html/view-001/democlone.bnw.html"></div>
-
+        <!--pocket sample 4-->
+        <!--html from a request w/data (dynamic cloning)-->
+        <div>
+            <div
+                    class="pocket box mb-5"
+                    data-items="democlone2"
+                    data-override-democlone2="/html/view-001/democlone.bnw.html"
+            ></div>
+        </div>
+    </div>
+    <!-- END main body -->
+    <!-- Footer -->
+    <div id="Footer" class="container">
+        <footer class="pocket" data-items="footer"></footer>
+    </div>
 </div>
-
-<footer class="footer mt-auto py-3 bg-light pocket" data-items="footer"></footer>
-
-<!-- END main body -->
-
+<!-- END Page body-->
 <!-- pocket items -->
 <!-- this is an HTML library of snippets -->
 <!-- used to create the layout as needed -->
 <items>
     <item id="default">..loading</item>
     <item id="frontend-html">
-        <p>Welcome to the <a href="https://github.com/quasicodo42/HTMW" target="_blank"><span class="fw-bold">HTMW</span></a> demo, a simple frontend display architecture for creating single-page web apps.</p>
-        <p>If you can write simple HTML and have a working knowledge of no-code JSON endpoints, you can have a fully functioning site up and running in no time.</p>
-        <p>The core framework is simple: 1) get data, 2) display data. And do both easily, and automagically (or by user triggers)!</p>
-        <p>There are 3 main concepts; <span class="fw-bold">pockets</span>, <span class="fw-bold">items</span> and <span class="fw-bold">cloning</span>. You define "pockets" in your HTML, that are filled with HTML "items". Additionally, the "items" may contain HTML "clone" snippets that automatically fill with JSON data.</p>
-        <p>For example, this HTML snippet is called from an inline <span class="fw-bold">item</span> built into index.html and has been placed into the correct pocket, here.</p>
+        <h2 class="text-center welcome">
+            Welcome to the
+            <a
+                    href="https://github.com/quasicodo42/HTMW"
+                    target="_blank"
+                    rel="noopener"
+            ><span class="htmw">HTMW</span></a
+            >
+            demo
+        </h2>
+        <p class="text-center mb-5 welcome_italic" style="color: #6c757d">
+            a simple frontend display architecture for creating single-page web
+            apps.
+        </p>
+        <div
+                class="card bg-transparent border-info-subtle justify-content-center align-items-center m-auto"
+                style="max-width: 65ch"
+        >
+            <p class="p-3 rounded-2">
+            <span class="material-symbols-outlined fs-3 text-primary">
+              task_alt </span
+            ><br />
+                If you can write simple HTML and have a working knowledge of no-code
+                JSON endpoints, you can have a fully functioning site up and running
+                in no time.
+            </p>
+        </div>
+        <br />
+        <div class="container px-5">
+            <h5>The core framework is simple:</h5>
+        </div>
+        <div class="container master">
+            <div class="card-anim">
+                <div class="words">Get_Data!</div>
+                <div class="words">Display_Data!</div>
+            </div>
+        </div>
+        <div class="mt-5 px-5">
+            <p>And do both easily, and automatically (or by user triggers)!</p>
+        </div>
+        <div class="px-5">
+            <p>
+                There are 3 main concepts; <span class="fw-bold">pockets</span>,
+                <span class="fw-bold">items</span> and
+                <span class="fw-bold">cloning</span>. You define "pockets" in your
+                HTML, that are filled with HTML "items". Additionally, the "items"
+                may contain HTML "clone" snippets that automatically fill with JSON
+                data.
+            </p>
+        </div>
+        <!-- ID #core SideBar -->
+        <div id="core" class="px-5">
+          <span>
+            For example, this HTML snippet is called from an inline
+            <span class="fw-bold">item</span> built into index.html and has been
+            placed into the correct pocket, here.
+          </span>
+        </div>
     </item>
     <item id="sample">
-        <h3>CORE Languages, Structures & Concepts</h3>
-        <p>This particular HTML is rendered from an inline <span class="fw-bold">item</span>. Then, the cloned list is rendered from the "static" JSON file found at <a href="/js/json/view-001/demo.json" target="_blank">/js/json/view-001/demo.json</a>.</p>
+        <div class="core mt-5">
+            <div class="typing-wrapper">
+                <h1 class="text-light title typing">
+                    CORE Languages, Structures & Concepts
+                </h1>
+            </div>
+        </div>
+        <div class="container intro_block mt-5 px-5">
+            <p>
+                This particular HTML is rendered from an inline
+                <span class="fw-bold">item</span>. Then, the cloned list is rendered
+                from the "static" JSON file found at
+                <a href="/js/json/view-001/demo.json" target="_blank"
+                >/js/json/view-001/demo.json</a
+                >.
+            </p>
+        </div>
         <div>
-            <ul class="clone" data-data-source="js/json/view-001/demo.json">
-                <li>
-                    <span class="fw-bold">{{rec:name}}</span> - {{rec:detail}}
-                    <p>
-                        {{rec:desc}}
-                        <br><span class="fw-bold">Skill Level Required: {{rec:skill}}</span>
-                    </p>
-                </li>
-            </ul>
+            <div class="clone mx-5" data-data-source="js/json/view-001/demo.json">
+                <div class="container">
+                    <div class="row row-cols-1 g-3 mb-2">
+                        <div class="col">
+                            <div class="container border-top">
+                                <div class="item-name card-header">
+                                    <h4 class="pt-3">{{rec:name}}</h4>
+                                </div>
+                                <div class="item-detail">
+                                    <p class="text-capitalize fw-semibold text-black-50">
+                                        {{rec:detail}}
+                                    </p>
+                                </div>
+                                <div class="item-desc mb-3">{{rec:desc}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="prod-list" class="mb-2"></div>
+            <hr class="mx-5" />
         </div>
     </item>
     <item id="footer">
-        <div class="container">
-            <span class="text-muted">
-                Samples using HTMW:
+        <div class="container bg-transparent mt-3">
+            <div class="text-body-secondary text-wrap">
+                <div class="row w-100 h-100">
+                    <div class="pb-2">
+                        <span class="text-light">Samples using HTMW:</span>
+                    </div>
+                    <div
+                            class="col-lg-12 col-md-12 col-sm-12 mb-2 d-flex justify-content-evenly"
+                    >
                 <span class="clone" data-data-source="js/json/samples.json">
-                    <span>
-                        <a class="m-2" href="{{rec:website}}" target="{{rec:target}}">{{rec:name}}</a>&nbsp;
-                    </span>
+                  <span style="font-size: 18px">
+                    <a
+                            class="px-1 text-primary"
+                            href="{{rec:website}}"
+                            target="{{rec:target}}"
+                    >{{rec:name}} </a
+                    >&nbsp;
+                  </span>
                 </span>
-            </span>
+                    </div>
+                </div>
+                <p class="rights">All Rights Reserved &copy; - 2023</p>
+            </div>
+            <a
+                    id="back-to-top"
+                    href="#"
+                    class="btn btn-outline-primary btn-md rounded-circle back-to-top"
+                    role="button"
+            >UP</a
+            >
         </div>
     </item>
 </items>
@@ -91,29 +293,34 @@
 <script src="/js/htmw.in.js"></script>
 
 <!-- Custom Javascript -->
+<script src="/js/script.js" defer></script>
+<!-- Animation tracker -->
 <script>
     /*
     custom scripts below are created to help the flow as needed
     the below code is for advanced functionality demonstration purposes
-     */
+    */
 
     //preload 3rd party data, using the callback "productDataFormat" (custom function)
-    pckt.getData("https://dummyjson.com/products", null, "productDataFormat");
+    pckt.getData(
+        'https://dummyjson.com/products?limit=8',
+        null,
+        'productDataFormat'
+    );
     //when the data returns it needs massaging, format it for consumption with a custom function in the pckt namespace
-    pckt.productDataFormat = function (obj){
+    pckt.productDataFormat = function (obj) {
         let newObj = obj;
-        if(newObj){
+        if (newObj) {
             //this function stores the new "data source" by the name "products"
             //the name reference is made in /html/democlone.html, i.e., data-data-source="products"
-            strg.set("products",{response:newObj.products});
+            strg.set('products', { response: newObj.products });
         }
-    }
+    };
 
     //this function is called by default, if available, when all pockets are filled (or the process is complete)
-    pckt.callback = function(name,obj){
-        console.log(name,strg.del(name));
-    }
+    pckt.callback = function (name, obj) {
+        console.log(name, strg.del(name));
+    };
 </script>
-
 </body>
 </html>
