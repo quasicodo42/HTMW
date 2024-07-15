@@ -403,7 +403,10 @@ const pckt = (function(id) {
                 return;
             }
 
-            let fullPocket       = $("[data-data-source='" + name + "']").not($('items').find("[data-data-source='" + name + "']"));
+            let fullPocket = $('<div>');
+            if($("[data-data-source='" + name + "']")){
+                fullPocket = $("[data-data-source='" + name + "']").not($('items').find("[data-data-source='" + name + "']"));
+            }
             const fullPocketData = $(fullPocket).data();
             const hasPreflight   = (fullPocketData && fullPocketData.hasOwnProperty('preflight') && typeof pckt[fullPocketData.preflight] === "function");
             const hasPostflight  = (fullPocketData && fullPocketData.hasOwnProperty('postflight') && typeof pckt[fullPocketData.postflight] === "function");
@@ -424,9 +427,11 @@ const pckt = (function(id) {
                 strg.del(altName);
             }
 
-            endpointFetcher(true,(jsonDir ? jsonDir + name + ".json" : name), (post || {}))
-                .then((dataObj) => {
+            const settings = prefetch(true,(jsonDir ? jsonDir + name + ".json" : name), (post || {}));
 
+            fetch(settings.url,settings.fetchParams)
+                .then(response => response.json())
+                .then(dataObj => {
                     if(hasPostflight){
                         dataObj = pckt[fullPocketData.postflight]((altName || name), dataObj);
                     }else if(typeof pckt.postflight === "function"){
@@ -482,8 +487,11 @@ const pckt = (function(id) {
             }
             queued.html.push(name);
 
-            endpointFetcher(false,endpoint)
-                .then((htmlStr) => {
+            const settings = prefetch(false, endpoint);
+
+            fetch(settings.url, settings.fetchParams)
+                .then(response => response.text())
+                .then(htmlStr => {
                     queued.html = queued.html.filter(item => item !== name);
                     let item = $("<item id='" + name + "'>").html(htmlStr);
                     if((strg.get("softCacheItems") || []).includes(name) || $(item).find('[id]').length || !$('items').length) {
@@ -857,7 +865,7 @@ const strc = (function () {
     }
 })();
 
-async function endpointFetcher(isJson = true, url = '', data = {}, headers = {}, asBody = false) {
+function prefetch(isJson = true, url = '', data = {}, headers = {}, asBody = false) {
     // Defaults marked with *
     let fetchParams = {
         method: 'GET' , // *GET, POST, PUT, DELETE, etc.
@@ -912,11 +920,5 @@ async function endpointFetcher(isJson = true, url = '', data = {}, headers = {},
         fetchParams.header = headers;
     }
 
-    const response = await fetch(url, fetchParams);
-
-    if(isJson){
-        return response.json();
-    }else{
-        return response.text();
-    }
+    return {url:url,fetchParams:fetchParams};
 }
