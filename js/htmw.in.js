@@ -362,7 +362,8 @@ const pckt = (function(id) {
     let queued      = {html:[],data:[],ts:Date.now()};
     let callbacks   = {html:{},data:{},ts:Date.now()};
     let maxLoadTime = 2000; //milliseconds
-    let jsonDir     = ''; // "/app.lists/json/";
+    let dataDir     = ''; // "/app.lists/json/";
+    let htmlDir     = '/html/'; // "/html/";
     let prefix      = 'pa-';
     let recordsAt   = 'response';
     let udSettings  = {};
@@ -379,11 +380,17 @@ const pckt = (function(id) {
         set maxLoadTime(value) {
             maxLoadTime = (+value || 2000);
         },
-        get jsonDir() {
-            return jsonDir;
+        get dataDir() {
+            return dataDir;
         },
-        set jsonDir(value) {
-            jsonDir = value;
+        set dataDir(value) {
+            dataDir = value;
+        },
+        get htmlDir() {
+            return htmlDir;
+        },
+        set htmlDir(value) {
+            htmlDir = value;
         },
         get prefix() {
             return prefix;
@@ -427,7 +434,7 @@ const pckt = (function(id) {
                 strg.del(altName);
             }
 
-            const settings = prefetch(true,(jsonDir ? jsonDir + name + ".json" : name), (post || {}));
+            const settings = prefetch(true,(dataDir ? dataDir + name + ".json" : name), (post || {}));
 
             fetch(settings.url,settings.fetchParams)
                 .then(response => response.json())
@@ -480,7 +487,7 @@ const pckt = (function(id) {
             if(queued.html.includes(name)){
                 return;
             }
-            let endpoint = "/html/" + name + ".html";
+            let endpoint = pckt.htmlDir + name + ".html";
             let override = "override" + name.charAt(0).toUpperCase() + name.slice(1);
             if(pocketData.hasOwnProperty(override)){
                 endpoint = pocketData[override];
