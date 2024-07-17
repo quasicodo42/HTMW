@@ -433,9 +433,9 @@ const pckt = (function(id) {
                 .then(response => response.json())
                 .then(dataObj => {
                     if(hasPostflight){
-                        dataObj = pckt[fullPocketData.postflight]((altName || name), dataObj);
+                        dataObj = pckt[fullPocketData.postflight]((altName || name), dataObj) || dataObj;
                     }else if(typeof pckt.postflight === "function"){
-                        dataObj = pckt.postflight((altName || name), dataObj);
+                        dataObj = pckt.postflight((altName || name), dataObj) || dataObj;
                     }
 
                     dataObj = dataObj || {};
