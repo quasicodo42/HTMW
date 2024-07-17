@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    pckt.fillPockets();
-
     //init
     const itemsData = $("items").data() || {};
     if(!strg.get("softCacheItems") && itemsData.hasOwnProperty("softCacheItems")){
@@ -9,6 +7,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if(!strg.get("noCacheItems") && itemsData.hasOwnProperty("noCacheItems")){
         strg.set("noCacheItems",itemsData.noCacheItems.split(','));
     }
+
+    pckt.fillPockets();
 });
 
 const strg = (function () {
