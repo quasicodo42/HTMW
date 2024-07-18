@@ -886,28 +886,28 @@ function prefetch(isJson = true, url = '', data = {}, headers = {}, asBody = fal
     //override using pckt.udSettings
     if('fetchParams' in pckt.udSettings){
         fetchParams = pckt.udSettings.fetchParams;
-        pckt.udSettings = {name:'fetchParams',value:undefined};
+        delete pckt.udSettings.fetchParams;
     }else{
         if('data' in pckt.udSettings){
             data = pckt.udSettings.data;
-            pckt.udSettings = {name:'data',value:undefined};
+            delete pckt.udSettings.data;
         }
         if('headers' in pckt.udSettings){
             headers = pckt.udSettings.headers;
-            pckt.udSettings = {name:'data',value:undefined};
+            delete pckt.udSettings.headers;
         }
     }
     if('isJson' in pckt.udSettings){
         isJson = pckt.udSettings.isJson;
-        pckt.udSettings = {name:'isJson',value:undefined};
+        delete pckt.udSettings.isJson;
     }
     if('url' in pckt.udSettings){
         url = pckt.udSettings.url;
-        pckt.udSettings = {name:'url',value:undefined};
+        delete pckt.udSettings.url;
     }
     if('asBody' in pckt.udSettings){
         asBody = pckt.udSettings.asBody;
-        pckt.udSettings = {name:'asBody',value:undefined};
+        delete pckt.udSettings.asBody;
     }
 
     if(Object.entries(data).length){
