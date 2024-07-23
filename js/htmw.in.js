@@ -845,11 +845,13 @@ const strc = (function () {
             objects = objects || [{}];
             type    = type || 'automatic';
             let objType = typeof objects;
-            let refName;
+            let refName, refObj;
 
+            //check for standardized pckt.response object reference
             if(objType === 'string'){
                 refName = objects;
-                objects = strg.get(refName);
+                refObj  = strg.get(refName) || {response:undefined};
+                objects = refObj.response;
             }
 
             if(typeof objects == 'object' && objects.length && objects[0].hasOwnProperty(key)){
@@ -857,7 +859,8 @@ const strc = (function () {
                 if(key === strc.prevSortKey){
                     objects = objects.reverse();
                     if(refName){
-                        strg.set(refName, objects);
+                        refObj.response = objects;
+                        strg.set(refName, refObj);
                     }
                     return objects;
                 }
@@ -893,7 +896,8 @@ const strc = (function () {
             strc.prevSortKey = key;
 
             if(refName){
-                strg.set(refName, objects);
+                refObj.response = objects;
+                strg.set(refName, refObj);
             }
 
             return objects;
