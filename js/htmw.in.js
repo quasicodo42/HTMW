@@ -839,20 +839,48 @@ const pckt = (function(id) {
 })(41);
 
 const strc = (function () {
+    let prevSortKey;
     return {
-        sortObj: function (object,key,type) {
-            object = object || [{}];
-            type   = type || 'default';
+        sortObj: function (objects,key,type) {
+            objects = objects || [{}];
+            type    = type || 'automatic';
+            let objType = typeof objects;
+            let refName;
+
+            if(objType === 'string'){
+                refName = objects;
+                objects = strg.get(refName);
+            }
+
+            if(typeof objects == 'object' && objects.length && objects[0].hasOwnProperty(key)){
+                //check if previous sort on same key
+                if(key === strc.prevSortKey){
+                    objects = objects.reverse();
+                    if(refName){
+                        strg.set(refName, objects);
+                    }
+                    return objects;
+                }
+                //check for dynamic sort type
+                if(type === 'automatic' && +objects[0][key] === objects[0][key]){
+                    type = 'numeric';
+                }
+            }else{
+                console.error('Object does not contain key [' + key + ']')
+                return objects;
+            }
 
             switch(type){
+                case "number":
                 case "numeric":
-                    object.sort(function (a, b) {
+                    objects.sort(function (a, b) {
                         return a[key] - b[key];
                     });
                     break;
+                case "text":
                 case "string":
                 default:
-                    object.sort(function (a, b) {
+                    objects.sort(function (a, b) {
                         let x = a[key].toLowerCase();
                         let y = b[key].toLowerCase();
                         if (x < y) { return -1; }
@@ -861,7 +889,14 @@ const strc = (function () {
                     });
                     break;
             }
-            return object;
+
+            strc.prevSortKey = key;
+
+            if(refName){
+                strg.set(refName, objects);
+            }
+
+            return objects;
         },
         uuid: function(){
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
