@@ -317,6 +317,44 @@ const core = (() => {
                         return v.toString(16);
                     });
                 },
+                setRoute: (base, title, append, info) => {
+                    base  = base || core.hp.getRoute();
+                    title = title || 'C.O.R.E.';
+                    const state  = { additionalInformation: (info || 'Updated bookmark location') };
+                    if(append){
+                        base+= append;
+                    }
+                    window.history.replaceState(state, title, base);
+                },
+                getRoute: (which) => {
+                    const urlObj = new URL(window.location.href);
+                    return urlObj[which || 'href'];
+                },
+                copy: (text) => {
+                    let successful = false;
+                    let textArea   = document.createElement("textarea");
+                    textArea.style.position = 'fixed';
+                    textArea.style.top = 0;
+                    textArea.style.left = 0;
+                    textArea.style.width = '2em';
+                    textArea.style.height = '2em';
+                    textArea.style.padding = 0;
+                    textArea.style.border = 'none';
+                    textArea.style.outline = 'none';
+                    textArea.style.boxShadow = 'none';
+                    textArea.style.background = 'transparent';
+                    textArea.value = text;
+                    textArea.id = 'copyarea';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        successful = document.execCommand('copy');
+                    } catch (err) {
+                        console.error('Copy unsuccessful!');
+                    }
+                    document.body.removeChild(textArea);
+                    return successful;
+                },
             }
         })(),
         //pocket functions
@@ -362,7 +400,7 @@ const core = (() => {
                     }
 
                     //check for complete objects or timeout
-                    if(requiredTempList.length === pass.length || core.hp.date(null,'ts') - tempStart > pk_timeout){
+                    if(requiredTempList.length === pass.length || core.hp.date(null,'ts') - tempStart > core.pk.timeout){
                         //reset the checks
                         tempStart = null;
                         tempList  = [];

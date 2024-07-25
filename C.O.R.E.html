@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>C.O.R.E. 4 ALL</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="icon" href="favicon.png">
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+<div class="container">
+    <nav class="nav">
+        <a href="#" class="nav-link" target="#main" data-pk-templates="other">change</a>
+        <a href="#" class="nav-link" target="#main" data-pk-templates="default,stuff">change back</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div id="main">
+        <div class="pckt" data-pk-templates="default,stuff,deep" data-default-pk-source="https://zzzap.io/Forms/login"></div>
+    </div>
+</div>
+
+<div class="container">
+    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+        <div class="col-md-4 d-flex align-items-center">
+            <a href="/" class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1">
+                <svg class="bi" width="30" height="24"><use xlink:href="#bootstrap"></use></svg>
+            </a>
+            <span class="mb-3 mb-md-0 text-body-secondary">© 2024 Company, Inc</span>
+        </div>
+
+        <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
+            <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#twitter"></use></svg></a></li>
+            <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#instagram"></use></svg></a></li>
+            <li class="ms-3"><a class="text-body-secondary" href="#"><svg class="bi" width="24" height="24"><use xlink:href="#facebook"></use></svg></a></li>
+        </ul>
+    </footer>
+</div>
+
+<!-- pckt storage elements -->
+<section id="cr-data" style="display:none;">
+    <template name="other">
+        <h1>Hello World!</h1>
+        <div id="header">This will be <strong>good</strong>.</div>
+        <a href="#" class="nav-link" target="#main" data-pk-templates="deep">recursive</a>
+    </template>
+    <template name="stuff">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Height</th>
+                <th>Date</th>
+                <th>Phone</th>
+                <th>Username</th>
+                <th>Hair</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="pk-clone" data-pk-data="users" data-pk-source="https://dummyjson.com/users?limit=5">
+                <td>{{aug:index}})</td>
+                <td>{{rec:firstName:upperfirst}} {{rec:lastName:upperfirst}}</td>
+                <td>{{rec:height:decimal:cm}}</td>
+                <td>{{rec:birthDate:date:MM/DD/YYYY}}</td>
+                <td>{{rec:phone:phone}}</td>
+                <td>{{rec:username}}</td>
+                <td>{{rec:hair.color}}</td>
+            </tr>
+            </tbody>
+        </table>
+        <hr>
+        <div class="row">
+            <div class="pk-clone col-sm-3" data-pk-data="prods" data-pk-source="https://dummyjson.com/products?limit=12">
+                <div class="card">
+                    <img class="card-img-top" src="{{rec:thumbnail}}" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">{{rec:title}}</h5>
+                        <p class="card-text">{{rec:description}}</p>
+                        <p class="card-text">Price: {{rec:price:money:$}} <small class="text-secondary">{{rec:discountPercentage:decimal:%}} off</small> </p>
+                        <p class="card-text">Brand: <strong>{{rec:brand}}</strong></p>
+                        <p class="card-text">Rating: {{rec:rating:decimal: ⭐}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template name="deep">
+        <div class="container">
+            <h3>Recursive Cloning</h3>
+            <div class="row">
+                <div class="pk-clone col-sm-4" data-pk-data="pop">
+                    <span class="text-secondary">{{rec:name:upper}}</span> paid {{rec:paid:money:$}} on {{rec:ts:date:date}} for a {{rec:stuff.food}}.
+                    <div>{{rec:more:pk_cloner:colors}}</div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template name="colors">
+        {{aug:i}} - <strong>{{rec:color}}</strong><br>                      <div class="bg-light ps-3">{{rec:hues:pk_cloner:colors}}</div>
+    </template>
+</section>
+<script src="/js/C.O.R.E.js"></script>
+<script>
+//test data
+core.cr.setData('pop',[
+    {name:'fred',paid:21.58,ts:1721788872,phone:8011231233,stuff:{food:'pizza'},more:[{color:'blue'},{color:'gold'}]},
+    {name:'jake',paid:2.11,ts:1721188872,phone:8018760408,stuff:{food:'pear'},more:[{color:'red',hues:[{color:'fire engine'},{color:'candy apple'}]}]},
+    {name:'jaker',paid:6.87,ts:1721798872,phone:8011231233,stuff:{food:'banana'},more:[{color:'yellow'},{color:'orange'},{color:'pink',hues:[{color:'bright'},{color:'hot'}]},{color:'magenta',hues:[{color:'dark'},{color:'hot'},{color:'magnetic'}]}]}
+]);
+</script>
+</body>
+</html>
