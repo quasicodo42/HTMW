@@ -539,7 +539,8 @@ const core = (() => {
                             let value = record.hasOwnProperty(member) ? record[member] : null;
                             switch(type){
                                 case 'aug': case '!':
-                                    if(['i','index','count'].includes(member)) value = ccount + 1;
+                                    if(['i','index'].includes(member)) value = ccount;
+                                    else if(['c','count'].includes(member)) value = ccount + 1;
                                     break;
                                 case 'rec': case '#':
                                 default:

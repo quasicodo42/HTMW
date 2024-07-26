@@ -63,7 +63,7 @@
             </thead>
             <tbody>
             <tr class="pk-clone" data-pk-data="users" data-pk-source="https://dummyjson.com/users?limit=5">
-                <td>{{aug:index}})</td>
+                <td>{{aug:count}})</td>
                 <td>{{rec:firstName:upperfirst}} {{rec:lastName:upperfirst}}</td>
                 <td>{{rec:height:decimal:cm}}</td>
                 <td>{{rec:birthDate:date:MM/DD/YYYY}}</td>
@@ -101,7 +101,7 @@
         </div>
     </template>
     <template name="colors">
-        {{aug:i}} - <strong>{{rec:color}}</strong><br>
+        {{aug:index}} - <strong>{{rec:color}}</strong><br>
         <div class="bg-light ps-3">{{rec:hues:pk_cloner:colors}}</div>
     </template>
 </section>

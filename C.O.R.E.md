@@ -1,33 +1,52 @@
-C.O.R.E
+#C.O.R.E
 
-custom functions
-core.cb_preflight()
-core.cb_postflight()
+## `<section>`
+## `<template>`
 
-core.be_preflight()
-core.be_postflight()
+##custom functions
+###core.cb_preflight()
+###core.cb_postflight()
 
-core.pk_eol()
+###core.be_preflight()
+###core.be_postflight()
 
-data referencing
+###core.pk_eol()
 
+##DATA REFERENCING
+```javascript
 {{type:object-member:format-ref:clue}}
-record examples
+```
+
+####BASIC - record examples
+```javascript
 {{rec:name_first:upper}}
 {{rec:amount:money:$}}
+```
 
-special deep cloning
+####SPECIAL - deep cloning
+```javascript
 {{type:list-of-objects:keyword:template-name}}
 {{rec:items:pk_cloner:item}}
+```
 
-special inline attributes
+####SPECIAL - HTML inline attributes
+```javascript
 {{type:object-member:keyword:tag-attribute}}
 {{rec:thumbnail:pk_attr:src}}
+```
 
-minimum usage
+####SAMPLE - minimum usage
+```javascript
 {{rec:name_first}}
-maximum usage
-{{rec:name_first:lower,upperfirst}}
+```
 
-augmented UX examples
-{{aug:index}}
+####SAMPLE - maximum usage
+```javascript
+{{rec:name_first:lower,upperfirst}}
+```
+
+####AUGMENTED - UX examples
+```javascript
+{{aug:index}} {{aug:i}}
+{{aug:count}} {{aug:c}}
+```
