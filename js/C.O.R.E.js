@@ -2,6 +2,7 @@
 const core = (() => {
     const template = document.createElement('template');
     const section  = document.getElementById('cr-data') || template.cloneNode(true);
+    let dbug       = true;
     if(document.readyState === 'complete' ){
         setTimeout(()=>{core.init()});
     } else {
@@ -16,11 +17,14 @@ const core = (() => {
         get template() {
             return template;
         },
+        set dbug(value) {
+            dbug = Boolean(+value || true);
+        },
         init: () => {
             core.cr.initData();
             core.hp.addClickListeners();
             core.pk.getTemp();
-            console.log('C.O.R.E started at ' + core.hp.date());
+            if(dbug) console.log('C.O.R.E loaded at ' + core.hp.date());
         },
         //backend functions
         be: (() => {
@@ -50,16 +54,14 @@ const core = (() => {
                     });
                 },
                 preflight: (dataRef, dataSrc, type) => {
-                    return {dataRef:dataRef, tempRef:dataRef, dataSrc:dataSrc, type:type};
+                    if(typeof core.be_preflight === "function"){
+                         return core.be_preflight(dataRef, dataSrc, type);
+                    }
+                    return {dataRef:dataRef, dataSrc:dataSrc, type:type};
                 },
                 postflight: (dataRef, dataObj, type) => {
-                    switch(dataRef){
-                        case 'prods':
-                            dataObj = dataObj.products;
-                            break;
-                        case 'users':
-                            dataObj = dataObj.users;
-                            break;
+                    if(typeof core.be_postflight === "function"){
+                        return core.be_postflight(dataRef, dataObj, type);
                     }
                     return dataObj;
                 },
@@ -68,11 +70,15 @@ const core = (() => {
         //callback functions
         cb: (() => {
             return {
-                preflight: (dataRef, type) => {
-                    //console.log('pre', dataRef, type);
+                preflight: (dataRef, dataObj, type) => {
+                    if(typeof core.cb_preflight === "function"){
+                        core.cb_preflight(dataRef, dataObj, type);
+                    }
                 },
-                postflight: (dataRef, type) => {
-                    //console.log('post', dataRef, type);
+                postflight: (dataRef, dataObj, type) => {
+                    if(typeof core.cb_postflight === "function"){
+                        core.cb_postflight(dataRef, dataObj, type);
+                    }
                 },
             }
         })(),
@@ -198,6 +204,31 @@ const core = (() => {
                         core.pk.getTemp();
                     });
                 },
+                copy: (text) => {
+                    let successful = false;
+                    let textArea   = document.createElement("textarea");
+                    textArea.style.position = 'fixed';
+                    textArea.style.top = 0;
+                    textArea.style.left = 0;
+                    textArea.style.width = '2em';
+                    textArea.style.height = '2em';
+                    textArea.style.padding = 0;
+                    textArea.style.border = 'none';
+                    textArea.style.outline = 'none';
+                    textArea.style.boxShadow = 'none';
+                    textArea.style.background = 'transparent';
+                    textArea.value = text;
+                    textArea.id = 'copyarea';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        successful = document.execCommand('copy');
+                    } catch (err) {
+                        console.error('Copy unsuccessful!');
+                    }
+                    document.body.removeChild(textArea);
+                    return successful;
+                },
                 date: (dateStr, format) => {
                     let date   = (dateStr || new Date().toLocaleString());
                     let output = (format || 'm/d/yy h:mm p').toUpperCase();
@@ -235,6 +266,8 @@ const core = (() => {
 
                     if(output === 'TS'){
                         return +t;
+                    }else if(output === 'PERF'){
+                        return performance.now();
                     }
 
                     return output
@@ -266,6 +299,19 @@ const core = (() => {
                             return core.hp.digData(object[member], ref);
                         }
                     }
+                },
+                getRoute: (which) => { //TODO
+                    const urlObj = new URL(window.location.href);
+                    return urlObj[which || 'href'];
+                },
+                setRoute: (base, title, append, info) => { //TODO
+                    base  = base || core.hp.getRoute();
+                    title = title || 'C.O.R.E';
+                    const state  = { additionalInformation: (info || 'Updated bookmark location') };
+                    if(append){
+                        base+= append;
+                    }
+                    window.history.replaceState(state, title, base);
                 },
                 sortObj: (objects, key, type) => {
                     objects = objects || [{}];
@@ -317,44 +363,6 @@ const core = (() => {
                         return v.toString(16);
                     });
                 },
-                setRoute: (base, title, append, info) => {
-                    base  = base || core.hp.getRoute();
-                    title = title || 'C.O.R.E.';
-                    const state  = { additionalInformation: (info || 'Updated bookmark location') };
-                    if(append){
-                        base+= append;
-                    }
-                    window.history.replaceState(state, title, base);
-                },
-                getRoute: (which) => {
-                    const urlObj = new URL(window.location.href);
-                    return urlObj[which || 'href'];
-                },
-                copy: (text) => {
-                    let successful = false;
-                    let textArea   = document.createElement("textarea");
-                    textArea.style.position = 'fixed';
-                    textArea.style.top = 0;
-                    textArea.style.left = 0;
-                    textArea.style.width = '2em';
-                    textArea.style.height = '2em';
-                    textArea.style.padding = 0;
-                    textArea.style.border = 'none';
-                    textArea.style.outline = 'none';
-                    textArea.style.boxShadow = 'none';
-                    textArea.style.background = 'transparent';
-                    textArea.value = text;
-                    textArea.id = 'copyarea';
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    try {
-                        successful = document.execCommand('copy');
-                    } catch (err) {
-                        console.error('Copy unsuccessful!');
-                    }
-                    document.body.removeChild(textArea);
-                    return successful;
-                },
             }
         })(),
         //pocket functions
@@ -365,6 +373,8 @@ const core = (() => {
             let dataStart;
             let tempList = [];
             let tempStart;
+            let stack = 0;
+            let stackTs;
             return {
                 get timeout() {
                     return timeout;
@@ -372,7 +382,20 @@ const core = (() => {
                 set timeout(value) {
                     timeout = (+value || 2000);
                 },
+                eoc: () => {
+                    if(dbug) console.log('C.O.R.E completed in ' + (core.hp.date(null,'perf') - stackTs).toFixed(1) + 'ms');
+                    stackTs = 0;
+                    if(typeof core.pk_eol === "function"){
+                        core.pk_eol();
+                    }
+                },
                 getTemp: () => {
+                    stack++;
+
+                    if(!stackTs){
+                        stackTs = core.hp.date(null,'perf');
+                    }
+
                     if(!tempStart){
                         tempStart = core.hp.date(null,'ts');
                     }
@@ -399,6 +422,8 @@ const core = (() => {
                         }
                     }
 
+                    stack--;
+
                     //check for complete objects or timeout
                     if(requiredTempList.length === pass.length || core.hp.date(null,'ts') - tempStart > core.pk.timeout){
                         //reset the checks
@@ -410,9 +435,14 @@ const core = (() => {
                         setTimeout(()=>{
                             core.pk.getTemp();
                         },250);
+                        return;
                     }
+
+                    //End of Call
+                    if(!stack) core.pk.eoc();
                 },
                 addTemp: () => {
+                    stack++;
                     //find the pocket elements
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets){
@@ -422,17 +452,19 @@ const core = (() => {
                         const temps = pocket.dataset.pkTemplates.split(',')
                         //fill the pockets w/items
                         for (const temp of temps){
-                            core.cb.preflight(temp, 'temp');
+                            core.cb.preflight(temp, null, 'temp');
                             pocket.insertAdjacentHTML('beforeend', core.cr.getTemp(temp));
-                            core.cb.postflight(temp, 'temp');
+                            core.cb.postflight(temp, null, 'temp');
                         }
                         if(!pocket.getElementsByClassName('pk-clone').length){
                             pocket.style.display = '';
                         }
                     }
                     core.pk.getData();
+                    stack--;
                 },
                 getData: () => {
+                    stack++;
                     if(!dataStart){
                         dataStart = core.hp.date(null,'ts');
                     }
@@ -465,8 +497,10 @@ const core = (() => {
                             core.pk.getData();
                         },250);
                     }
+                    stack--;
                 },
                 addData: () => {
+                    stack++;
                     //find the clone elements
                     let clones = document.getElementsByClassName('pk-clone');
                     for (const clone of clones){
@@ -476,9 +510,9 @@ const core = (() => {
                         pattern.id = pattern.id || 'pk-' + (Math.random() + 1).toString(36).substring(7);
                         pattern.classList.remove("pk-clone");
                         pattern.classList.add("pk-cloned");
-                        core.cb.preflight(dataRef, 'data');
+                        core.cb.preflight(dataRef, records, 'data');
                         clone.insertAdjacentHTML('beforebegin', core.pk.cloner(records, pattern.outerHTML));
-                        core.cb.postflight(dataRef, 'data');
+                        core.cb.postflight(dataRef, records, 'data');
                     }
                     //remove the clone templates
                     while(clones[0]) {
@@ -490,8 +524,10 @@ const core = (() => {
                     for (const link of links){
                         core.hp.addClickListener(link);
                     }
+                    stack--;
                 },
                 cloner: (records = [], tempName) => {
+                    stack++;
                     let newTempStr = '';
                     let ccount     = 0;
                     for (const record of records) {
@@ -502,10 +538,10 @@ const core = (() => {
                             let [type, member, format, clue] = placeholder.split(':');
                             let value = record.hasOwnProperty(member) ? record[member] : null;
                             switch(type){
-                                case 'aug':
-                                    if(['index','i','count'].includes(member)) value = ccount + 1;
+                                case 'aug': case '!':
+                                    if(['i','index','count'].includes(member)) value = ccount + 1;
                                     break;
-                                case 'rec':
+                                case 'rec': case '#':
                                 default:
                                     //try digging for the value
                                     if(!value) value = core.hp.digData(record, member);
@@ -517,7 +553,7 @@ const core = (() => {
                         ccount++;
                         newTempStr = newTempStr + ' ' + newString;
                     }
-
+                    stack--;
                     return newTempStr;
                 },
             }
@@ -746,6 +782,9 @@ const core = (() => {
                         switch(fformat){
                             case 'pk_cloner':
                                 value = core.pk.cloner(value, core.cr.getTemp(clue) || 'not found');
+                                break;
+                            case 'pk_attr':
+                                value = ' ' + cclue + '="' + value + '" ';
                                 break;
                             case 'upper':
                                 value = value.toUpperCase();
