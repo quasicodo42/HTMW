@@ -21,9 +21,9 @@ const core = (() => {
             dbug = Boolean(+value || true);
         },
         init: () => {
-            core.cr.initData();
+            core.cr.init();
             core.hp.addClickListeners();
-            core.pk.getTemp();
+            core.pk.soc();
             if(dbug) console.log('C.O.R.E loaded at ' + core.hp.date());
         },
         //backend functions
@@ -48,7 +48,7 @@ const core = (() => {
                             return res.text()
                         }).then((dataString) => {
                         dataString = (core.be.postflight(settings.dataRef, (dataString || 'Not Found'), 'temp') || dataString);
-                        core.cr.setTemp(settings.dataRef, dataString);
+                        core.cr.setTemplate(settings.dataRef, dataString);
                     }).catch((error) => {
                         console.error(error);
                     });
@@ -89,11 +89,11 @@ const core = (() => {
                 set storageType(value) {
                     storageType = (+value || 0);
                 },
-                initData: () => {
-                    let temps = section.querySelectorAll('template[name]') || [];
-                    for (const temp of temps){
-                        const tempName = temp.getAttribute('name');
-                        core.cr.setTemp(tempName, core.cr.getTemp(tempName));
+                init: () => {
+                    let templates = section.querySelectorAll('template[name]') || [];
+                    for (const template of templates){
+                        const templateName = template.getAttribute('name');
+                        core.cr.setTemplate(templateName, core.cr.getTemplate(templateName));
                     }
                 },
                 delData: (name, elem) => {
@@ -139,25 +139,25 @@ const core = (() => {
                         return JSON.parse(sessionStorage.getItem(name));
                     }
                 },
-                delTemp: (name) => {
-                    let temp = section.querySelector('[name=' + name + ']');
-                    if(temp){
-                        return temp.parentNode.removeChild(temp);
+                delTemplate: (name) => {
+                    let template = section.querySelector('[name=' + name + ']');
+                    if(template){
+                        return template.parentNode.removeChild(template);
                     }
                 },
-                setTemp: (name, value) => {
+                setTemplate: (name, value) => {
                     //delete previous template by name
-                    core.cr.delTemp(name);
-                    //create new temp
-                    let newTemp = template.cloneNode(true);
-                    newTemp.setAttribute("name", name);
-                    newTemp.textContent = escape(value);
+                    core.cr.delTemplate(name);
+                    //create new template
+                    let newTemplate = template.cloneNode(true);
+                    newTemplate.setAttribute("name", name);
+                    newTemplate.textContent = escape(value);
                     //append new temp
-                    section.appendChild(newTemp);
+                    section.appendChild(newTemplate);
                 },
-                getTemp: (name) => {
-                    let temp = section.querySelector('[name=' + name + ']') || template;
-                    return String(unescape(temp.textContent || temp.innerHTML)).trim();
+                getTemplate: (name) => {
+                    let newTemplate = (section.querySelector('[name=' + name + ']') || template);
+                    return String(unescape(newTemplate.textContent || newTemplate.innerHTML)).trim();
                 },
             }
         })(),
@@ -201,32 +201,32 @@ const core = (() => {
                         //add the pocket to DOM
                         section.append(pocket);
                         //fill pockets with templates
-                        core.pk.getTemp();
+                        core.pk.soc();
                     });
                 },
                 copy: (text) => {
                     let successful = false;
-                    let textArea   = document.createElement("textarea");
-                    textArea.style.position = 'fixed';
-                    textArea.style.top = 0;
-                    textArea.style.left = 0;
-                    textArea.style.width = '2em';
-                    textArea.style.height = '2em';
-                    textArea.style.padding = 0;
-                    textArea.style.border = 'none';
-                    textArea.style.outline = 'none';
-                    textArea.style.boxShadow = 'none';
-                    textArea.style.background = 'transparent';
-                    textArea.value = text;
-                    textArea.id = 'copyarea';
-                    document.body.appendChild(textArea);
-                    textArea.select();
+                    let textarea   = document.createElement("textarea");
+                    textarea.style.position = 'fixed';
+                    textarea.style.top = 0;
+                    textarea.style.left = 0;
+                    textarea.style.width = '2em';
+                    textarea.style.height = '2em';
+                    textarea.style.padding = 0;
+                    textarea.style.border = 'none';
+                    textarea.style.outline = 'none';
+                    textarea.style.boxShadow = 'none';
+                    textarea.style.background = 'transparent';
+                    textarea.value = text;
+                    textarea.id = 'copyarea';
+                    document.body.appendChild(textarea);
+                    textarea.select();
                     try {
                         successful = document.execCommand('copy');
                     } catch (err) {
                         console.error('Copy unsuccessful!');
                     }
-                    document.body.removeChild(textArea);
+                    document.body.removeChild(textarea);
                     return successful;
                 },
                 date: (dateStr, format) => {
@@ -313,6 +313,13 @@ const core = (() => {
                     }
                     window.history.replaceState(state, title, base);
                 },
+                /**
+                 * Sorts an array of objects by key.
+                 *
+                 * @param {array} objects - The array of objects to be sorted.
+                 * @param {string} key - The key that will be used to sort.
+                 * @returns {array} The sorted object.
+                 */
                 sortObj: (objects, key, type) => {
                     objects = objects || [{}];
                     type    = type || 'automatic';
@@ -357,23 +364,99 @@ const core = (() => {
 
                     return objects;
                 },
+                /**
+                 * Creates a UUID
+                 *
+                 * @returns {string} The UUID
+                 */
                 uuid: () => {
                     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                         let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                         return v.toString(16);
                     });
                 },
+                /**
+                 * Hydrates HTML tag content by using the class attribute as directive
+                 * Basic Syntax: <span class="h-user-name"></span> Result -> <span class>John</span>
+                 * Default Examples: h-userId, h-user.name, h-user.billing.address1; element will be hydrated (appended) and the class removed
+                 * Options: h--countdown; element will be newly hydrated each call to the function
+                 *
+                 * @returns {void}
+                 */
+                hydrateByClass: () => {
+                    const elements = document.querySelectorAll('[class^="h-"]');
+                    for(const element of elements){
+                        const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
+                        for(const hClass of hClasses){
+                            const [ref, cache, member] = hClass.split('--').join('-').split('-');
+                            const data     = (core.cr.getData(cache) || {[member]:''});
+                            const tag      = element.tagName;
+                            const value    = core.hp.digData(data,member) || '';
+                            const delClass = !hClass.includes('f--');
+                            switch(tag) {
+                                case 'INPUT':
+                                case 'SELECT':
+                                case 'TEXTAREA':
+                                    element.value = value;
+                                    break;
+                                default:
+                                    if(delClass){
+                                        element.innerHTML+= value;
+                                    }else{
+                                        element.innerHTML = value;
+                                    }
+                            }
+                            if(delClass){
+                                element.classList.remove(hClass);
+                            }
+                        }
+                    }
+                },
+                /**
+                 * Formats HTML tag content by using the class attribute as directive
+                 * Basic Syntax: <span class="f-upper">john</span> Result -> <span class>JOHN</span>
+                 * Default Examples: f-money, f-upper, f-date-time, this will be formatted once and the class removed
+                 * Options: f--money, this will continue to be formatted each call to the function
+                 * Advanced Syntax: <div class="f-money" data-f-default="0" data-f-clue="USD">
+                 *
+                 * @returns {void}
+                 */
+                formatByClass: () => {
+                    const elements = document.querySelectorAll('[class^="f-"]');
+                    for(const element of elements){
+                        const fClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('f-')});
+                        let value      = element.innerHTML;
+                        //check for possible arguments
+                        let fDefault = (element.dataset.fDefault || '');
+                        let fClue    = (element.dataset.fClue || null);
+
+                        //begin formatting
+                        for(const fClass of fClasses){
+                            const delClass = !fClass.includes('f--');
+                            //take care of nulls/empties
+                            if(value === 'null' || !value.length){
+                                element.innetText = fDefault
+                            }else{
+                                //change class to format; f-money -> money, f--left-pad -> leftpad
+                                const format = fClass.split('f-').join('').split('-').join('').toLowerCase();
+                                element.innerHTML = core.ux.modTemp(value, format, fClue);
+                            }
+                            if(delClass){
+                                element.classList.remove(fClass);
+                            }
+                        }
+                    }
+                },
             }
         })(),
         //pocket functions
         pk: (() => {
-            const temp  = template.cloneNode(true);
-            let timeout = 2000;
+            let timeout  = 2000;
             let dataList = [];
             let dataStart;
-            let tempList = [];
-            let tempStart;
-            let stack = 0;
+            let templateList = [];
+            let templateStart;
+            let stackCount = 0;
             let stackTs;
             return {
                 get timeout() {
@@ -382,22 +465,44 @@ const core = (() => {
                 set timeout(value) {
                     timeout = (+value || 2000);
                 },
+                /**
+                 * End of Call
+                 * The final running function of the DOM manipulation, cleanup
+                 * Will call user-defined function: core.pk_eoc, if available
+                 *
+                 * @returns {void}
+                 */
                 eoc: () => {
+                    core.hp.hydrateByClass();
+                    core.hp.formatByClass();
                     if(dbug) console.log('C.O.R.E completed in ' + (core.hp.date(null,'perf') - stackTs).toFixed(1) + 'ms');
                     stackTs = 0;
-                    if(typeof core.pk_eol === "function"){
-                        core.pk_eol();
+                    if(typeof core.pk_eoc === "function"){
+                        core.pk_eoc();
                     }
                 },
-                getTemp: () => {
-                    stack++;
+                /**
+                 * Start of Call
+                 * The initial function of the DOM manipulation
+                 * Will call user-defined function: core.pk_soc, if available
+                 *
+                 * @returns {void}
+                 */
+                soc: () => {
+                    if(typeof core.pk_soc === "function"){
+                        core.pk_soc();
+                    }
+                    core.pk.getTemplate();
+                },
+                getTemplate: () => {
+                    stackCount++;
 
                     if(!stackTs){
                         stackTs = core.hp.date(null,'perf');
                     }
 
-                    if(!tempStart){
-                        tempStart = core.hp.date(null,'ts');
+                    if(!templateStart){
+                        templateStart = core.hp.date(null,'ts');
                     }
 
                     const requiredTempList = [];
@@ -410,39 +515,39 @@ const core = (() => {
                         //fill the pockets w/items
                         for (const temp of temps){
                             requiredTempList.push(temp);
-                            let hasTemp = core.cr.getTemp(temp);
+                            let hasTemp = core.cr.getTemplate(temp);
                             //get data if not available
                             if(hasTemp){
                                 pass.push(true);
-                            }else if(!tempList.includes(temp)){
+                            }else if(!templateList.includes(temp)){
                                 const dataSrc = pocket.dataset[temp + 'PkSource'];
-                                tempList.push(temp);
+                                templateList.push(temp);
                                 core.be.getTemp(temp, (dataSrc || temp));
                             }
                         }
                     }
 
-                    stack--;
+                    stackCount--;
 
                     //check for complete objects or timeout
-                    if(requiredTempList.length === pass.length || core.hp.date(null,'ts') - tempStart > core.pk.timeout){
+                    if(requiredTempList.length === pass.length || core.hp.date(null,'ts') - templateStart > core.pk.timeout){
                         //reset the checks
-                        tempStart = null;
-                        tempList  = [];
+                        templateStart = null;
+                        templateList  = [];
                         //add the data to the UX
-                        core.pk.addTemp();
+                        core.pk.addTemplate();
                     } else {
                         setTimeout(()=>{
-                            core.pk.getTemp();
+                            core.pk.getTemplate();
                         },250);
                         return;
                     }
 
                     //End of Call
-                    if(!stack) core.pk.eoc();
+                    if(!stackCount) core.pk.eoc();
                 },
-                addTemp: () => {
-                    stack++;
+                addTemplate: () => {
+                    stackCount++;
                     //find the pocket elements
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets){
@@ -453,7 +558,7 @@ const core = (() => {
                         //fill the pockets w/items
                         for (const temp of temps){
                             core.cb.preflight(temp, null, 'temp');
-                            pocket.insertAdjacentHTML('beforeend', core.cr.getTemp(temp));
+                            pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(temp));
                             core.cb.postflight(temp, null, 'temp');
                         }
                         if(!pocket.getElementsByClassName('pk-clone').length){
@@ -461,10 +566,10 @@ const core = (() => {
                         }
                     }
                     core.pk.getData();
-                    stack--;
+                    stackCount--;
                 },
                 getData: () => {
-                    stack++;
+                    stackCount++;
                     if(!dataStart){
                         dataStart = core.hp.date(null,'ts');
                     }
@@ -497,10 +602,10 @@ const core = (() => {
                             core.pk.getData();
                         },250);
                     }
-                    stack--;
+                    stackCount--;
                 },
                 addData: () => {
-                    stack++;
+                    stackCount++;
                     //find the clone elements
                     let clones = document.getElementsByClassName('pk-clone');
                     for (const clone of clones){
@@ -524,10 +629,10 @@ const core = (() => {
                     for (const link of links){
                         core.hp.addClickListener(link);
                     }
-                    stack--;
+                    stackCount--;
                 },
                 cloner: (records = [], tempName) => {
-                    stack++;
+                    stackCount++;
                     let newTempStr = '';
                     let ccount     = 0;
                     for (const record of records) {
@@ -554,7 +659,7 @@ const core = (() => {
                         ccount++;
                         newTempStr = newTempStr + ' ' + newString;
                     }
-                    stack--;
+                    stackCount--;
                     return newTempStr;
                 },
             }
@@ -780,12 +885,19 @@ const core = (() => {
                     for(const format of formats){
                         let [fformat, cclue] = format.split('*');
                         cclue = (cclue || clue);
+                        if(cclue){
+                            let [count, pad] = cclue.split('|');
+                        }
                         switch(fformat){
                             case 'pk_cloner':
-                                value = core.pk.cloner(value, core.cr.getTemp(clue) || 'not found');
+                                value = core.pk.cloner(value, core.cr.getTemplate(clue) || 'not found');
                                 break;
                             case 'pk_attr':
                                 value = ' ' + cclue + '="' + value + '" ';
+                                break;
+                            case 'email':
+                            case 'lower':
+                                value = value.toLowerCase()
                                 break;
                             case 'upper':
                                 value = value.toUpperCase();
@@ -793,10 +905,16 @@ const core = (() => {
                             case 'upperfirst':
                                 value = value.charAt(0).toUpperCase() + value.slice(1);
                                 break;
-                            case 'lower':
-                                value = value.toLowerCase()
+                            case 'padleft':
+                                value = value.padStart(count, pad);
+                                break;
+                            case 'padright':
+                                value = value.padEnd((count || 2), (pad || '&nbsp;'));
                                 break;
                             case 'money':
+                                if(cclue === 'USD'){
+                                    cclue = '$';
+                                }
                                 value = (cclue === '$' ? cclue : '') + (+value).toFixed(2);
                                 break;
                             case 'decimal':
@@ -811,6 +929,16 @@ const core = (() => {
                                     value = check.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
                                 }
                                 break;
+                            case 'removehtml':
+                                //TODO pckt.formatRemoveHtml($(elem).html());
+                                break;
+                            case 'scrub':
+                                value = core.sb.format((count || 2), (pad || '&nbsp;'));
+                                break;
+                            default:
+                                if(typeof core.ux_modTemp === 'function'){
+                                    value = core.ux_modTemp(value, formats, clue);
+                                }
                         }
                     }
                     return value;

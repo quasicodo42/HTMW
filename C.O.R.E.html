@@ -57,7 +57,7 @@
                 <th>Height</th>
                 <th>Date</th>
                 <th>Phone</th>
-                <th>Username</th>
+                <th class="h-pip-name f-upper-first"></th>
                 <th>Hair</th>
             </tr>
             </thead>
@@ -68,7 +68,7 @@
                 <td>{{rec:height:decimal:cm}}</td>
                 <td>{{rec:birthDate:date:MM/DD/YYYY}}</td>
                 <td>{{rec:phone:phone}}</td>
-                <td>{{rec:username}}</td>
+                <td class="f-upper">{{rec:username}}</td>
                 <td>{{rec:hair.color}}</td>
             </tr>
             </tbody>
@@ -135,12 +135,16 @@
         return dataObj;
     }
 
+    //Start Of Call
+    core.pk_soc = () => {}
+
     //End Of Call
-    core.pk_eol = () => {}
+    core.pk_eoc = () => {}
 
     //--END CUSTOM FUNCTIONS--//
 
     //test data
+    core.cr.setData('pip',{name:'frodo'});
     core.cr.setData('pop',[
         {name:'fred',paid:21.58,ts:1721788872,phone:8011231233,stuff:{food:'pizza'},more:[{color:'blue'},{color:'gold'}]},
         {name:'jake',paid:2.11,ts:1721188872,phone:8018760408,stuff:{food:'pear'},more:[{color:'red',hues:[{color:'fire engine'},{color:'candy apple'}]}]},
