@@ -22,9 +22,9 @@ const core = (() => {
         },
         init: () => {
             core.cr.init();
-            core.hp.addClickListeners();
+            core.hf.addClickListeners();
             core.pk.soc();
-            if(dbug) console.log('C.O.R.E loaded at ' + core.hp.date());
+            if(dbug) console.log('C.O.R.E loaded at ' + core.hf.date());
         },
         //backend functions
         be: (() => {
@@ -162,13 +162,13 @@ const core = (() => {
             }
         })(),
         //helper functions
-        hp: (() => {
+        hf: (() => {
             let prevSortKey;
             return {
                 addClickListeners: () => {
                     let links = document.getElementsByTagName('a') || [];
                     for (const link of links){
-                        core.hp.addClickListener(link);
+                        core.hf.addClickListener(link);
                     }
                 },
                 addClickListener: (element) => {
@@ -296,7 +296,7 @@ const core = (() => {
                         if(!ref.length){
                             return object[member];
                         }else{
-                            return core.hp.digData(object[member], ref);
+                            return core.hf.digData(object[member], ref);
                         }
                     }
                 },
@@ -305,7 +305,7 @@ const core = (() => {
                     return urlObj[which || 'href'];
                 },
                 setRoute: (base, title, append, info) => { //TODO
-                    base  = base || core.hp.getRoute();
+                    base  = base || core.hf.getRoute();
                     title = title || 'C.O.R.E';
                     const state  = { additionalInformation: (info || 'Updated bookmark location') };
                     if(append){
@@ -391,7 +391,7 @@ const core = (() => {
                             const [ref, cache, member] = hClass.split('--').join('-').split('-');
                             const data     = (core.cr.getData(cache) || {[member]:''});
                             const tag      = element.tagName;
-                            const value    = core.hp.digData(data,member) || '';
+                            const value    = core.hf.digData(data,member) || '';
                             const delClass = !hClass.includes('f--');
                             switch(tag) {
                                 case 'INPUT':
@@ -473,9 +473,9 @@ const core = (() => {
                  * @returns {void}
                  */
                 eoc: () => {
-                    core.hp.hydrateByClass();
-                    core.hp.formatByClass();
-                    if(dbug) console.log('C.O.R.E completed in ' + (core.hp.date(null,'perf') - stackTs).toFixed(1) + 'ms');
+                    core.hf.hydrateByClass();
+                    core.hf.formatByClass();
+                    if(dbug) console.log('C.O.R.E completed in ' + (core.hf.date(null,'perf') - stackTs).toFixed(1) + 'ms');
                     stackTs = 0;
                     if(typeof core.pk_eoc === "function"){
                         core.pk_eoc();
@@ -498,11 +498,11 @@ const core = (() => {
                     stackCount++;
 
                     if(!stackTs){
-                        stackTs = core.hp.date(null,'perf');
+                        stackTs = core.hf.date(null,'perf');
                     }
 
                     if(!templateStart){
-                        templateStart = core.hp.date(null,'ts');
+                        templateStart = core.hf.date(null,'ts');
                     }
 
                     const requiredTempList = [];
@@ -530,7 +530,7 @@ const core = (() => {
                     stackCount--;
 
                     //check for complete objects or timeout
-                    if(requiredTempList.length === pass.length || core.hp.date(null,'ts') - templateStart > core.pk.timeout){
+                    if(requiredTempList.length === pass.length || core.hf.date(null,'ts') - templateStart > core.pk.timeout){
                         //reset the checks
                         templateStart = null;
                         templateList  = [];
@@ -571,7 +571,7 @@ const core = (() => {
                 getData: () => {
                     stackCount++;
                     if(!dataStart){
-                        dataStart = core.hp.date(null,'ts');
+                        dataStart = core.hf.date(null,'ts');
                     }
                     //find the clone elements
                     let clones = document.getElementsByClassName('pk-clone');
@@ -591,7 +591,7 @@ const core = (() => {
                     }
 
                     //check for complete objects or timeout
-                    if(clones.length === pass.length || core.hp.date(null,'ts') - dataStart > timeout){
+                    if(clones.length === pass.length || core.hf.date(null,'ts') - dataStart > timeout){
                         //reset the checks
                         dataStart = null;
                         dataList  = [];
@@ -627,7 +627,7 @@ const core = (() => {
                     }
                     let links = document.getElementsByTagName('a');
                     for (const link of links){
-                        core.hp.addClickListener(link);
+                        core.hf.addClickListener(link);
                     }
                     stackCount--;
                 },
@@ -650,7 +650,7 @@ const core = (() => {
                                 case 'rec': case '#':
                                 default:
                                     //try digging for the value
-                                    if(!value) value = core.hp.digData(record, member);
+                                    if(!value) value = core.hf.digData(record, member);
                                     break;
                             }
                             value = core.ux.modTemp(value, format, clue);
@@ -665,7 +665,7 @@ const core = (() => {
             }
         })(),
         //validation functions
-        sb: (() => {
+        sv: (() => {
             let regex        = {};
             regex.email      = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             regex.numbers    = /[^0-9]/g;
@@ -876,24 +876,31 @@ const core = (() => {
         //user experience
         ux: (() => {
             return {
-                modTemp: (value, formats, clue) => {
-                    //value (mixed)
-                    //formats (string) i.e., format*clue|format OR ['money*$','lower']
-                    //clue (string)
-                    formats = formats || [];
-                    if(typeof formats === 'string') formats = formats.split('|');
-                    for(const format of formats){
-                        let [fformat, cclue] = format.split('*');
-                        cclue = (cclue || clue);
-                        if(cclue){
-                            let [count, pad] = cclue.split('|');
-                        }
-                        switch(fformat){
+                /**
+                 * Applies formatting to a string.
+                 *
+                 * @param {any} value - Usually a string, but some formats may require another type
+                 * @param {any} formatList - An array of formats, a single format, or a pipe delimited list of formats, i.e., format*clue|format OR ['money*$','lower']
+                 * @param {string} clue - A clue used as an argument in the formatting a string.
+                 * @returns {string} The new value after formatting.
+                 */
+                modTemp: (value, formatList, clue) => {
+                    formatList = formatList || [];
+                    //check for pipe delimited string
+                    if(typeof formatList === 'string') formatList = formatList.split('|');
+                    if(clue && clue.includes('|')){
+                        let [count, pad] = clue.split('|');
+                    }
+                    for(const formatItem of formatList){
+                        //checking for format*clue format
+                        let [formatName, clueOverride] = formatItem.split('*');
+                        let clueFinal = (clueOverride || clue);
+                        switch(formatName){
                             case 'pk_cloner':
                                 value = core.pk.cloner(value, core.cr.getTemplate(clue) || 'not found');
                                 break;
                             case 'pk_attr':
-                                value = ' ' + cclue + '="' + value + '" ';
+                                value = ' ' + clueFinal + '="' + value + '" ';
                                 break;
                             case 'email':
                             case 'lower':
@@ -912,32 +919,34 @@ const core = (() => {
                                 value = value.padEnd((count || 2), (pad || '&nbsp;'));
                                 break;
                             case 'money':
-                                if(cclue === 'USD'){
-                                    cclue = '$';
+                                if(clueFinal === 'USD'){
+                                    clueFinal = '$';
                                 }
-                                value = (cclue === '$' ? cclue : '') + (+value).toFixed(2);
+                                value = (clueFinal === '$' ? clueFinal : '') + (+value).toFixed(2);
                                 break;
                             case 'decimal':
-                                value = (+value).toFixed(2) + (cclue || '');
+                                value = (+value).toFixed(2) + (clueFinal || '');
                                 break;
                             case 'date':
-                                value = core.hp.date(value, cclue);
+                                value = core.hf.date(value, clueFinal);
                                 break;
                             case 'phone':
-                                const check = String(value || "").replace(/[^0-9]/g, "");
+                                let check = String(value || "").replace(/[^0-9]/g, "");
                                 if(value && check.length === 10){
                                     value = check.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
                                 }
                                 break;
                             case 'removehtml':
-                                //TODO pckt.formatRemoveHtml($(elem).html());
+                                let tempElem = document.createElement('DIV');
+                                tempElem.innerHTML = value;
+                                value = tempElem.textContent || tempElem.innerText || '';
                                 break;
                             case 'scrub':
-                                value = core.sb.format((count || 2), (pad || '&nbsp;'));
+                                value = core.sv.format((count || 2), (pad || '&nbsp;'));
                                 break;
                             default:
                                 if(typeof core.ux_modTemp === 'function'){
-                                    value = core.ux_modTemp(value, formats, clue);
+                                    value = core.ux_modTemp(value, formatList, clue);
                                 }
                         }
                     }
