@@ -29,9 +29,41 @@ const core = (() => {
         //backend functions
         be: (() => {
             return {
+                setGetParams: (settings) => {
+                    let fetchParams = {
+                        method: (settings.method || 'GET'),        // *GET, POST, PUT, PATCH, DELETE, etc.
+                        //mode: "no-cors",                         // *cors, no-cors, same-origin
+                        cache: (settings.cache || "no-cache"),     // *default, no-cache, reload, force-cache, only-if-cached
+                        //credentials: "same-origin",              // *same-origin, include, omit
+                        redirect: (settings.redirect || "follow"), // manual, *follow, error
+                        //referrerPolicy: "no-referrer",           // *no-referrer-when-downgrade, no-referrer, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                    }
+
+                    //checking for an array of headers
+                    if('headers' in settings && settings.headers && Object.entries(settings.headers).length){
+                        fetchParams.header = settings.headers;
+                    }
+
+                    //checking for data in user-defined settings; an object of name/value pairs to be posted
+                    if('data' in settings && settings.data && Object.entries(settings.data).length){
+                        fetchParams.method = ['GET'].includes(settings.method) ? 'POST' : settings.method.toUpperCase();
+                        //checking for a body post or a form post
+                        if('isFormData' in settings && settings.isFormData){
+                            const formData = new FormData();
+                            Object.entries(settings.data).forEach(function(pair){
+                                formData.append(pair[0], String(pair[1]));
+                            })
+                            fetchParams.body = formData;
+                        }else{
+                            fetchParams.body = JSON.stringify(settings.data);
+                        }
+                    }
+                    return fetchParams;
+                },
                 getData: (dataRef, dataSrc) => {
                     const settings = core.be.preflight(dataRef, dataSrc, 'data');
-                    fetch(settings.dataSrc)
+
+                    fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
                             return response.json()
                         }).then((dataObject) => {
@@ -43,7 +75,8 @@ const core = (() => {
                 },
                 getTemp: (dataRef, dataSrc) => {
                     const settings = core.be.preflight(dataRef, dataSrc, 'temp');
-                    fetch(settings.dataSrc)
+
+                    fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((res) => {
                             return res.text()
                         }).then((dataString) => {
@@ -54,10 +87,22 @@ const core = (() => {
                     });
                 },
                 preflight: (dataRef, dataSrc, type) => {
-                    if(typeof core.be_preflight === "function"){
-                         return core.be_preflight(dataRef, dataSrc, type);
+                    //settings: method, cache, redirect, headers, data, isFormData,...dataRef, dataSrc, type
+                    let defaultSettings = {
+                        dataRef: dataRef,
+                        dataSrc: dataSrc,
+                        type: type,
+                        method: 'GET',
+                        cache: 'no-cache',
+                        redirect: 'follow',
+                        headers: null,
+                        data: null,
+                        isFormData: false,
                     }
-                    return {dataRef:dataRef, dataSrc:dataSrc, type:type};
+                    if(typeof core.be_preflight === "function"){
+                         return {...defaultSettings, ...core.be_preflight(dataRef, dataSrc, type)};
+                    }
+                    return defaultSettings;
                 },
                 postflight: (dataRef, dataObj, type) => {
                     if(typeof core.be_postflight === "function"){
