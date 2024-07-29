@@ -1,8 +1,9 @@
 //C.O.R.E ver:20240725;
 const core = (() => {
-    const template = document.createElement('template');
-    const section  = document.getElementById('cr-data') || template.cloneNode(true);
-    let dbug       = true;
+    const template  = document.createElement('template');
+    const section   = document.getElementById('cr-data') || template.cloneNode(true);
+    let useDebugger = true;
+    let useRouting  = true;
     if(document.readyState === 'complete' ){
         setTimeout(()=>{core.init()});
     } else {
@@ -17,14 +18,17 @@ const core = (() => {
         get template() {
             return template;
         },
-        set dbug(value) {
-            dbug = Boolean(+value || true);
+        set useDebugger(value) {
+            useDebugger = Boolean(+value);
+        },
+        set useRouting(value) {
+            useRouting = Boolean(+value);
         },
         init: () => {
             core.cr.init();
             core.hf.addClickListeners();
-            core.pk.soc();
-            if(dbug) console.log('C.O.R.E loaded at ' + core.hf.date());
+            core.pk.init();
+            if(useDebugger) console.log('C.O.R.E loaded at ' + core.hf.date());
         },
         //backend functions
         be: (() => {
@@ -239,12 +243,14 @@ const core = (() => {
                         } else {
                             section = document.getElementsByTagName(target);
                         }
-                        //empty the section
-                        while(section.firstElementChild) {
-                            section.firstElementChild.remove();
+                        if(section) {
+                            //empty the section
+                            while (section.firstElementChild) {
+                                section.firstElementChild.remove();
+                            }
+                            //add the pocket to DOM
+                            section.append(pocket);
                         }
-                        //add the pocket to DOM
-                        section.append(pocket);
                         //fill pockets with templates
                         core.pk.soc();
                     });
@@ -349,7 +355,7 @@ const core = (() => {
                     const urlObj = new URL(window.location.href);
                     return urlObj[which || 'href'];
                 },
-                setRoute: (base, title, append, info) => { //TODO
+                setRoute: (base, title, append, info) => {
                     base  = base || core.hf.getRoute();
                     title = title || 'C.O.R.E';
                     const state  = { additionalInformation: (info || 'Updated bookmark location') };
@@ -503,12 +509,52 @@ const core = (() => {
             let templateStart;
             let stackCount = 0;
             let stackTs;
+            let directive = [];
             return {
                 get timeout() {
                     return timeout;
                 },
                 set timeout(value) {
                     timeout = (+value || 2000);
+                },
+                init: () => {
+                    const hash = core.hf.getRoute('hash');
+                    if(hash && hash.includes(escape('"t"')) && hash.includes(escape('"l"')) && hash.includes(escape('"n"'))){
+                        //build the UX according to the incoming hash directive
+                        const directive = JSON.parse(unescape(core.hf.getRoute('hash').split('#').join('')));
+                        for(const settings of directive){
+                            const pocket = document.createElement('div');
+                            pocket.classList.add('pckt');
+                            let nameList = [];
+                            for(const item of settings.l){
+                                nameList.push(item.n);
+                                if(item.hasOwnProperty('u')){
+                                    pocket.setAttribute('data-' + item.n + '-pk-source', item.u);
+                                }
+                            }
+                            pocket.setAttribute('data-pk-templates', nameList.join(','));
+
+                            const target = settings.t;
+                            //determine the location
+                            let section;
+                            if (target.includes('#')) {
+                                section = document.getElementById(target.replace('#', ''));
+                            } else if (target.includes('.')) {
+                                section = document.getElementsByClassName(target.replace('.', ''));
+                            } else {
+                                section = document.getElementsByTagName(target);
+                            }
+                            if(section) {
+                                //empty the section
+                                while (section.firstElementChild) {
+                                    section.firstElementChild.remove();
+                                }
+                                //add the pocket to DOM
+                                section.append(pocket);
+                            }
+                        }
+                    }
+                    core.pk.soc();
                 },
                 /**
                  * End of Call
@@ -520,8 +566,30 @@ const core = (() => {
                 eoc: () => {
                     core.hf.hydrateByClass();
                     core.hf.formatByClass();
-                    if(dbug) console.log('C.O.R.E completed in ' + (core.hf.date(null,'perf') - stackTs).toFixed(1) + 'ms');
-                    stackTs = 0;
+                    //build the route directive from the DOM
+                    let pockets = document.getElementsByClassName('pckt');
+                    for (const pocket of pockets) {
+                        //get the parent
+                        const parent = pocket.parentNode;
+                        const target = '#' + parent.id;
+                        //get the items
+                        const lists = [];
+                        const temps = pocket.dataset.pkTemplates.split(',');
+                        for(const template of temps){
+                            let list = {n:template};
+                            if(pocket.dataset[template + 'PkSource']){
+                                list.u = pocket.dataset[template + 'PkSource'];
+                            }
+                            lists.push(list);
+                        }
+                        directive.push({t:target,l:lists})
+                    }
+                    //update the URL
+                    if(useRouting) core.hf.setRoute(core.hf.getRoute('origin') + core.hf.getRoute('pathname') + core.hf.getRoute('search'), null, '#' + escape(JSON.stringify(directive)))
+                    if(useDebugger) console.log('C.O.R.E completed in ' + (core.hf.date(null,'perf') - stackTs).toFixed(1) + 'ms');
+                    //reset functional variables
+                    stackTs   = 0;
+                    directive = [];
                     if(typeof core.pk_eoc === "function"){
                         core.pk_eoc();
                     }
