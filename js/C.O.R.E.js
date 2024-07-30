@@ -77,14 +77,14 @@ const core = (() => {
                         console.error(error);
                     });
                 },
-                getTemp: (dataRef, dataSrc) => {
-                    const settings = core.be.preflight(dataRef, dataSrc, 'temp');
+                getTemplate: (dataRef, dataSrc) => {
+                    const settings = core.be.preflight(dataRef, dataSrc, 'template');
 
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((res) => {
                             return res.text()
                         }).then((dataString) => {
-                        dataString = (core.be.postflight(settings.dataRef, (dataString || 'Not Found'), 'temp') || dataString);
+                        dataString = (core.be.postflight(settings.dataRef, (dataString || 'Not Found'), 'template') || dataString);
                         core.cr.setTemplate(settings.dataRef, dataString);
                     }).catch((error) => {
                         console.error(error);
@@ -139,10 +139,19 @@ const core = (() => {
                     storageType = (+value || 0);
                 },
                 init: () => {
+                    let preloaded = [];
                     let templates = section.querySelectorAll('template[name]') || [];
                     for (const template of templates){
                         const templateName = template.getAttribute('name');
                         core.cr.setTemplate(templateName, core.cr.getTemplate(templateName));
+                        preloaded.push(templateName);
+                    }
+                    //setup keyword templates
+                    if(!preloaded.includes('EMPTY')){
+                        core.cr.setTemplate('EMPTY', '');
+                    }
+                    if(!preloaded.includes('LOADING')){
+                        core.cr.setTemplate('LOADING', '<marquee width="50%">loading...</marquee>');
                     }
                 },
                 delData: (name, elem) => {
@@ -201,7 +210,7 @@ const core = (() => {
                     let newTemplate = template.cloneNode(true);
                     newTemplate.setAttribute("name", name);
                     newTemplate.textContent = escape(value);
-                    //append new temp
+                    //append new template
                     section.appendChild(newTemplate);
                 },
                 getTemplate: (name) => {
@@ -490,7 +499,7 @@ const core = (() => {
                             }else{
                                 //change class to format; f-money -> money, f--left-pad -> leftpad
                                 const format = fClass.split('f-').join('').split('-').join('').toLowerCase();
-                                element.innerHTML = core.ux.modTemp(value, format, fClue);
+                                element.innerHTML = core.ux.formatValue(value, format, fClue);
                             }
                             if(delClass){
                                 element.classList.remove(fClass);
@@ -574,8 +583,8 @@ const core = (() => {
                         const target = '#' + parent.id;
                         //get the items
                         const lists = [];
-                        const temps = pocket.dataset.pkTemplates.split(',');
-                        for(const template of temps){
+                        const templates = pocket.dataset.pkTemplates.split(',').map(s => s.trim());
+                        for(const template of templates){
                             let list = {n:template};
                             if(pocket.dataset[template + 'PkSource']){
                                 list.u = pocket.dataset[template + 'PkSource'];
@@ -624,18 +633,20 @@ const core = (() => {
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets){
                         //get the items
-                        const temps = pocket.dataset.pkTemplates.split(',');
+                        const templates = pocket.dataset.pkTemplates.split(',').map(s => s.trim());
                         //fill the pockets w/items
-                        for (const temp of temps){
-                            requiredTempList.push(temp);
-                            let hasTemp = core.cr.getTemplate(temp);
+                        for (const template of templates){
+                            requiredTempList.push(template);
+                            let hasTemplate = core.cr.getTemplate(template);
                             //get data if not available
-                            if(hasTemp){
+                            if(hasTemplate || template === 'EMPTY'){
                                 pass.push(true);
-                            }else if(!templateList.includes(temp)){
-                                const dataSrc = pocket.dataset[temp + 'PkSource'];
-                                templateList.push(temp);
-                                core.be.getTemp(temp, (dataSrc || temp));
+                            }else if(!templateList.includes(template)){
+                                //add loading
+                                pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate('LOADING'));
+                                const dataSrc = pocket.dataset[template + 'PkSource'];
+                                templateList.push(template);
+                                core.be.getTemplate(template, (dataSrc || template));
                             }
                         }
                     }
@@ -664,15 +675,19 @@ const core = (() => {
                     //find the pocket elements
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets){
+                        //empty the pocket
+                        while (pocket.firstElementChild) {
+                            pocket.firstElementChild.remove();
+                        }
                         //hide the pocket, shown when filled
                         pocket.style.display = 'none';
                         //get the items
-                        const temps = pocket.dataset.pkTemplates.split(',')
+                        const templates = pocket.dataset.pkTemplates.split(',').map(s => s.trim());
                         //fill the pockets w/items
-                        for (const temp of temps){
-                            core.cb.preflight(temp, null, 'temp');
-                            pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(temp));
-                            core.cb.postflight(temp, null, 'temp');
+                        for (const template of templates){
+                            core.cb.preflight(template, null, 'template');
+                            pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(template));
+                            core.cb.postflight(template, null, 'template');
                         }
                         if(!pocket.getElementsByClassName('pk-clone').length){
                             pocket.style.display = '';
@@ -744,12 +759,12 @@ const core = (() => {
                     }
                     stackCount--;
                 },
-                cloner: (records = [], tempName) => {
+                cloner: (records = [], templateName) => {
                     stackCount++;
-                    let newTempStr = '';
+                    let newTemplateStr = '';
                     let ccount     = 0;
                     for (const record of records) {
-                        let newString = tempName; //TODO should be able to use item reference name
+                        let newString = templateName; //TODO should be able to use item reference name
                         //replace the placeholders {{rec:name}}
                         let placeholders = newString.match(/[^{\{]+(?=}\})/g) || [];
                         for(const placeholder of placeholders){
@@ -766,14 +781,14 @@ const core = (() => {
                                     if(!value) value = core.hf.digData(record, member);
                                     break;
                             }
-                            value = core.ux.modTemp(value, format, clue);
+                            value = core.ux.formatValue(value, format, clue);
                             newString = newString.replaceAll('{{' + placeholder + '}}', value);
                         }
                         ccount++;
-                        newTempStr = newTempStr + ' ' + newString;
+                        newTemplateStr = newTemplateStr + ' ' + newString;
                     }
                     stackCount--;
-                    return newTempStr;
+                    return newTemplateStr;
                 },
             }
         })(),
@@ -997,7 +1012,7 @@ const core = (() => {
                  * @param {string} clue - A clue used as an argument in the formatting a string.
                  * @returns {string} The new value after formatting.
                  */
-                modTemp: (value, formatList, clue) => {
+                formatValue: (value, formatList, clue) => {
                     formatList = formatList || [];
                     //check for pipe delimited string
                     if(typeof formatList === 'string') formatList = formatList.split('|');
