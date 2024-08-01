@@ -23,6 +23,15 @@
 </div>
 
 <div class="container">
+    <div>
+        <blockquote>
+            <p class="h--quote-quote">I said what I said!</p>
+        </blockquote>
+        <p>—<cite class="h--quote-author">Mother</cite></p>
+    </div>
+</div>
+
+<div class="container">
     <div id="main">
         <div class="pckt" data-pk-templates="default,stuff,deep" data-default-pk-source="https://zzzap.io/Forms/login"></div>
     </div>
@@ -50,6 +59,12 @@
 <section id="cr-data" style="display:none;">
     <template name="other">
         <h1>Hello World!</h1>
+        <div>
+            <blockquote>
+                <p class="h--quote-quote">I said what I said!</p>
+            </blockquote>
+            <p>—<cite class="h--quote-author">Mother</cite></p>
+        </div>
         <div id="header">This will be <strong>good</strong>.</div>
         <a href="#" class="nav-link" target="#main" data-pk-templates="deep">recursive</a>
     </template>
@@ -121,12 +136,17 @@
 
     //backend pre/post retrieval
     core.be_preflight = (dataRef, dataSrc, type) => {
+        let settings = {dataRef:dataRef, dataSrc:dataSrc, type:type};
         if(type.includes('temp')){
             if(dataRef === dataSrc){
                 dataSrc = '/html/CORE/' + dataSrc + '.html'
             }
+        }else if(type === 'data'){
+            if(dataRef === 'joke'){
+                settings.fetchParams = {mode: "no-cors"};
+            }
         }
-        return {dataRef:dataRef, dataSrc:dataSrc, type:type};
+        return settings;
     }
 
     core.be_postflight = (dataRef, dataObj, type) => {
@@ -154,6 +174,8 @@
     //--END CUSTOM FUNCTIONS--//
 
     //test data
+    core.be.getData('quote','https://dummyjson.com/quotes/random/'); //?delay=5000
+    core.be.getData('joke','https://dadjokes.developersandbox.xyz/api/v1/random'); //this one fails sucessfully
     core.cr.setData('pip',{name:'frodo'});
     core.cr.setData('pop',[
         {name:'fred',paid:21.58,ts:1721788872,phone:8011231233,stuff:{food:'pizza'},more:[{color:'blue'},{color:'gold'}]},

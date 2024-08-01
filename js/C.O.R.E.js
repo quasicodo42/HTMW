@@ -1,4 +1,5 @@
 //C.O.R.E ver:20240725;
+let core_be_count = 0;
 const core = (() => {
     const template  = document.createElement('template');
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
@@ -48,6 +49,10 @@ const core = (() => {
                         fetchParams.header = settings.headers;
                     }
 
+                    if('fetchParams' in settings && settings.fetchParams && Object.entries(settings.fetchParams).length){
+                        fetchParams = {...fetchParams, ...settings.fetchParams};
+                    }
+
                     //checking for data in user-defined settings; an object of name/value pairs to be posted
                     if('data' in settings && settings.data && Object.entries(settings.data).length){
                         fetchParams.method = ['GET'].includes(settings.method) ? 'POST' : settings.method.toUpperCase();
@@ -66,27 +71,31 @@ const core = (() => {
                 },
                 getData: (dataRef, dataSrc) => {
                     const settings = core.be.preflight(dataRef, dataSrc, 'data');
-
+                    core_be_count++;
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
-                            return response.json()
+                            core_be_count--;
+                            return (response.ok ? response.json() : '{"error":true,"settings":' + JSON.stringify(settings) + '}');
                         }).then((dataObject) => {
                         dataObject = (core.be.postflight(settings.dataRef, dataObject, 'data') || dataObject);
                         core.cr.setData(settings.dataRef, dataObject);
                     }).catch((error) => {
+                        core_be_count--;
                         console.error(error);
                     });
                 },
                 getTemplate: (dataRef, dataSrc) => {
                     const settings = core.be.preflight(dataRef, dataSrc, 'template');
-
+                    core_be_count++;
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
-                        .then((res) => {
-                            return res.text()
+                        .then((response) => {
+                            core_be_count--;
+                            return (response.ok ? response.text() : '{"error":true,"settings":' + JSON.stringify(settings) + '}');
                         }).then((dataString) => {
                         dataString = (core.be.postflight(settings.dataRef, (dataString || 'Not Found'), 'template') || dataString);
                         core.cr.setTemplate(settings.dataRef, dataString);
                     }).catch((error) => {
+                        core_be_count--;
                         console.error(error);
                     });
                 },
@@ -452,7 +461,7 @@ const core = (() => {
                             const data     = (core.cr.getData(cache) || {[member]:''});
                             const tag      = element.tagName;
                             const value    = core.hf.digData(data,member) || '';
-                            const delClass = !hClass.includes('f--');
+                            const delClass = !hClass.includes('h--');
                             switch(tag) {
                                 case 'INPUT':
                                 case 'SELECT':
@@ -611,6 +620,16 @@ const core = (() => {
                  * @returns {void}
                  */
                 soc: () => {
+                    //don't continue until all preloaded backend data is loaded
+                    if(core_be_count){
+                        setTimeout(()=>{
+                            core.pk.soc();
+                        },100);
+                        if(useDebugger) console.log('C.O.R.E preloading requested data/templates(' + core_be_count + ').');
+                        return;
+                    }
+
+                    //call user-defined start of function if declared
                     if(typeof core.pk_soc === "function"){
                         core.pk_soc();
                     }
@@ -663,7 +682,7 @@ const core = (() => {
                     } else {
                         setTimeout(()=>{
                             core.pk.getTemplate();
-                        },250);
+                        },100);
                         return;
                     }
 
@@ -759,12 +778,12 @@ const core = (() => {
                     }
                     stackCount--;
                 },
-                cloner: (records = [], templateName) => {
+                cloner: (records = [], templateRef) => {
                     stackCount++;
                     let newTemplateStr = '';
-                    let ccount     = 0;
+                    let count          = 0;
                     for (const record of records) {
-                        let newString = templateName; //TODO should be able to use item reference name
+                        let newString = templateRef; //TODO should be able to use item reference name
                         //replace the placeholders {{rec:name}}
                         let placeholders = newString.match(/[^{\{]+(?=}\})/g) || [];
                         for(const placeholder of placeholders){
@@ -772,8 +791,8 @@ const core = (() => {
                             let value = record.hasOwnProperty(member) ? record[member] : null;
                             switch(type){
                                 case 'aug': case '!':
-                                    if(['i','index'].includes(member)) value = ccount;
-                                    else if(['c','count'].includes(member)) value = ccount + 1;
+                                    if(['i','index'].includes(member)) value = count;
+                                    else if(['c','count'].includes(member)) value = count + 1;
                                     break;
                                 case 'rec': case '#':
                                 default:
@@ -784,7 +803,7 @@ const core = (() => {
                             value = core.ux.formatValue(value, format, clue);
                             newString = newString.replaceAll('{{' + placeholder + '}}', value);
                         }
-                        ccount++;
+                        count++;
                         newTemplateStr = newTemplateStr + ' ' + newString;
                     }
                     stackCount--;
