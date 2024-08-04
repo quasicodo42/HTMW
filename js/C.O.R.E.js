@@ -453,7 +453,7 @@ const core = (() => {
                  * @returns {void}
                  */
                 hydrateByClass: () => {
-                    const elements = document.querySelectorAll('[class^="h-"]');
+                    const elements = document.querySelectorAll('[class^="h-"],[class*=" h-"]');
                     for(const element of elements){
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
                         for(const hClass of hClasses){
@@ -491,7 +491,7 @@ const core = (() => {
                  * @returns {void}
                  */
                 formatByClass: () => {
-                    const elements = document.querySelectorAll('[class^="f-"]');
+                    const elements = document.querySelectorAll('[class^="f-"],[class*=" f-"]');
                     for(const element of elements){
                         const fClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('f-')});
                         let value      = element.innerHTML;
@@ -504,12 +504,13 @@ const core = (() => {
                             const delClass = !fClass.includes('f--');
                             //take care of nulls/empties
                             if(value === 'null' || !value.length){
-                                element.innetText = fDefault
-                            }else{
-                                //change class to format; f-money -> money, f--left-pad -> leftpad
-                                const format = fClass.split('f-').join('').split('-').join('').toLowerCase();
-                                element.innerHTML = core.ux.formatValue(value, format, fClue);
+                                value = fDefault;
                             }
+                            
+                            //change class to format; f-money -> money, f--left-pad -> leftpad
+                            const format = fClass.split('f-').join('').split('-').join('').toLowerCase();
+                            element.innerHTML = core.ux.formatValue(value, format, fClue);
+                            
                             if(delClass){
                                 element.classList.remove(fClass);
                             }
@@ -1075,6 +1076,7 @@ const core = (() => {
                                 value = (+value).toFixed(2) + (clueFinal || '');
                                 break;
                             case 'date':
+                            case 'datetime':
                                 value = core.hf.date(value, clueFinal);
                                 break;
                             case 'phone':
