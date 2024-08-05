@@ -1,5 +1,6 @@
 //C.O.R.E ver:20240725;
 let core_be_count = 0;
+let core_cr_count = 0;
 const core = (() => {
     const template  = document.createElement('template');
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
@@ -257,9 +258,9 @@ const core = (() => {
                         if (target.includes('#')) {
                             section = document.getElementById(target.replace('#', ''));
                         } else if (target.includes('.')) {
-                            section = document.getElementsByClassName(target.replace('.', ''));
+                            section = document.getElementsByClassName(target.replace('.', ''))[0]; //first only
                         } else {
-                            section = document.getElementsByTagName(target);
+                            section = document.getElementsByTagName(target)[0]; //first only
                         }
                         if(section) {
                             //empty the section
@@ -559,9 +560,9 @@ const core = (() => {
                             if (target.includes('#')) {
                                 section = document.getElementById(target.replace('#', ''));
                             } else if (target.includes('.')) {
-                                section = document.getElementsByClassName(target.replace('.', ''));
+                                section = document.getElementsByClassName(target.replace('.', ''))[0]; //first only
                             } else {
-                                section = document.getElementsByTagName(target);
+                                section = document.getElementsByTagName(target)[0]; //first only
                             }
                             if(section) {
                                 //empty the section
