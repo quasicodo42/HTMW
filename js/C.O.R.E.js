@@ -20,6 +20,9 @@ const core = (() => {
         get template() {
             return template;
         },
+        get useDebugger() {
+            return useDebugger;
+        },
         set useDebugger(value) {
             useDebugger = Boolean(+value);
         },
@@ -1037,9 +1040,7 @@ const core = (() => {
                     formatList = formatList || [];
                     //check for pipe delimited string
                     if(typeof formatList === 'string') formatList = formatList.split('|');
-                    if(clue && clue.includes('|')){
-                        let [count, pad] = clue.split('|');
-                    }
+                    let [count, pad] = (clue || '4|0').split('|');
                     for(const formatItem of formatList){
                         //checking for format*clue format
                         let [formatName, clueOverride] = formatItem.split('*');
@@ -1062,10 +1063,10 @@ const core = (() => {
                                 value = value.charAt(0).toUpperCase() + value.slice(1);
                                 break;
                             case 'padleft':
-                                value = value.padStart(count, pad);
+                                value = value.padStart((count || 4), (pad || '0'));
                                 break;
                             case 'padright':
-                                value = value.padEnd((count || 2), (pad || '&nbsp;'));
+                                value = value.padEnd((count || 4), (pad || '0'));
                                 break;
                             case 'money':
                                 if(clueFinal === 'USD'){
