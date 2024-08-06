@@ -117,7 +117,7 @@ const core = (() => {
                         isFormData: false,
                     }
                     if(typeof core.be_preflight === "function"){
-                         return {...defaultSettings, ...core.be_preflight(dataRef, dataSrc, type)};
+                        return {...defaultSettings, ...core.be_preflight(dataRef, dataSrc, type)};
                     }
                     return defaultSettings;
                 },
@@ -510,11 +510,11 @@ const core = (() => {
                             if(value === 'null' || !value.length){
                                 value = fDefault;
                             }
-                            
+
                             //change class to format; f-money -> money, f--left-pad -> leftpad
                             const format = fClass.split('f-').join('').split('-').join('').toLowerCase();
                             element.innerHTML = core.ux.formatValue(value, format, fClue);
-                            
+
                             if(delClass){
                                 element.classList.remove(fClass);
                             }
@@ -587,8 +587,10 @@ const core = (() => {
                  * @returns {void}
                  */
                 eoc: () => {
-                    core.hf.hydrateByClass();
-                    core.hf.formatByClass();
+                    setTimeout(()=>{
+                        core.hf.hydrateByClass();
+                        core.hf.formatByClass();
+                    })
                     //build the route directive from the DOM
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets) {
