@@ -357,6 +357,18 @@ const core = (() => {
                         .replace('P', p)
                         .replace('TS', t);
                 },
+
+                /**
+                 * Digs through an object looking for a value using a dot delimited string as a reference
+                 * Examples:
+                 * addresses.billing.street RETURNS the street value of billing of the parent addresses
+                 * news.categories.0 RETURNS the 0 index of the array categories of the parent news
+                 * *OPTIONALLY news.categories.[n] will return the joined array, all indexes as a string
+                 *
+                 * @param {object} object - The target object to be searched.
+                 * @param {string[]} ref - The string reference that will be used to dig through the object.
+                 * @returns {mixed} The string value that if found or undefined.
+                 */
                 digData: (object, ref) => {
                     if(typeof ref === 'string'){
                         ref = ref.split(ref.includes(',') ? ',' : '.');
@@ -364,6 +376,8 @@ const core = (() => {
                     let member = ref.shift();
                     if(!isNaN(+member)){
                         member = +member; //try an index
+                    }else if(member === '[n]' && Array.isArray(object)){
+                        return object.join(', ');
                     }
                     if(object && object.hasOwnProperty(member)){
                         if(!ref.length){
@@ -484,6 +498,7 @@ const core = (() => {
                             }
                         }
                     }
+                    if(useDebugger && elements.length) console.log('C.O.R.E hydrating ' + elements.length + ' elements');
                 },
                 /**
                  * Formats HTML tag content by using the class attribute as directive
@@ -520,6 +535,7 @@ const core = (() => {
                             }
                         }
                     }
+                    if(useDebugger && elements.length) console.log('C.O.R.E formatting ' + elements.length + ' elements');
                 },
             }
         })(),
@@ -587,10 +603,8 @@ const core = (() => {
                  * @returns {void}
                  */
                 eoc: () => {
-                    setTimeout(()=>{
-                        core.hf.hydrateByClass();
-                        core.hf.formatByClass();
-                    })
+                    core.hf.hydrateByClass();
+                    core.hf.formatByClass();
                     //build the route directive from the DOM
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets) {
