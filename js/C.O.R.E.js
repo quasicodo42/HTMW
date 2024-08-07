@@ -929,13 +929,13 @@ const core = (() => {
                             }
                             break;
                     }
-                    return value || (param1 ? scrb.format(param1,format) : value);
+                    return value || (param1 ? core.sv.format(param1,format) : value);
                 },
                 scrub: function (scrubArr) {
                     //[{name:"name",value:"John",scrubs:["req","lower"]}]
                     let resultObj = {success:true,scrubs:[],errors:{}};
                     scrubArr.forEach(function (scrubObj,i) {
-                        scrubArr[i] = scrb.scrubEach(scrubObj,scrubArr);
+                        scrubArr[i] = core.sv.scrubEach(scrubObj,scrubArr);
                         if(!scrubArr[i].success){
                             resultObj.success = false;
                             resultObj.errors[scrubArr[i].name] = scrubArr[i].errors;
@@ -1020,7 +1020,7 @@ const core = (() => {
                                 eachResult.error = "Value must contain " + clue + ".";
                                 break;
                             case "match":
-                                eachResult.success = scrb.scrubMatch(scrubArr,scrubObj,clue);
+                                eachResult.success = core.sv.scrubMatch(scrubArr,scrubObj,clue);
                                 eachResult.error = "Values must match (" + clue + ").";
                                 break;
                             case "gte":
@@ -1034,10 +1034,10 @@ const core = (() => {
                             case "email":
                                 eachResult.success = (String(scrubObj.value).length ? regex.email.test(scrubObj.value) : true);
                                 eachResult.error = "Only valid emails are allowed.";
-                                scrubObj.value = scrb.format(scrubObj.value,"lower");
+                                scrubObj.value = core.sv.format(scrubObj.value,"lower");
                                 break;
                             default:
-                                scrubObj.value = scrb.format(scrubObj.value,format);
+                                scrubObj.value = core.sv.format(scrubObj.value,format);
                         }
 
                         if(!eachResult.success){
@@ -1049,7 +1049,7 @@ const core = (() => {
                     return scrubObj;
                 },
                 scrubSimple: function (name,value,scrubs) {
-                    return scrb.scrubEach({name:name,value:value,scrubs:scrubs});
+                    return core.sv.scrubEach({name:name,value:value,scrubs:scrubs});
                 },
                 scrubMatch: function (scrubArr,scrubMatch,valueMatch) {
                     let match = false;
