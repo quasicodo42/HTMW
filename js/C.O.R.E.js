@@ -1,6 +1,7 @@
 //C.O.R.E ver:20240725;
 let core_be_count = 0;
 let core_cr_count = 0;
+let core_pk_count = 0;
 const core = (() => {
     const template  = document.createElement('template');
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
@@ -280,18 +281,18 @@ const core = (() => {
                 copy: (text) => {
                     let successful = false;
                     let textarea   = document.createElement("textarea");
-                    textarea.style.position = 'fixed';
-                    textarea.style.top = 0;
-                    textarea.style.left = 0;
-                    textarea.style.width = '2em';
-                    textarea.style.height = '2em';
-                    textarea.style.padding = 0;
-                    textarea.style.border = 'none';
-                    textarea.style.outline = 'none';
-                    textarea.style.boxShadow = 'none';
+                    textarea.id               = 'copyarea';
+                    textarea.value            = text;
+                    textarea.style.top        = 0;
+                    textarea.style.left       = 0;
+                    textarea.style.width      = '2em';
+                    textarea.style.height     = '2em';
+                    textarea.style.border     = 'none';
+                    textarea.style.padding    = 0;
+                    textarea.style.outline    = 'none';
+                    textarea.style.position   = 'fixed';
+                    textarea.style.boxShadow  = 'none';
                     textarea.style.background = 'transparent';
-                    textarea.value = text;
-                    textarea.id = 'copyarea';
                     document.body.appendChild(textarea);
                     textarea.select();
                     try {
@@ -544,9 +545,11 @@ const core = (() => {
             let timeout  = 2000;
             let dataList = [];
             let dataStart;
+            let dataEnd;
+            let dataLapse;
+            let timedOut = false;
             let templateList = [];
             let templateStart;
-            let stackCount = 0;
             let stackTs;
             let directive = [];
             return {
@@ -603,6 +606,11 @@ const core = (() => {
                  * @returns {void}
                  */
                 eoc: () => {
+                    if(!timedOut && (core_pk_count || core_be_count || core_cr_count)) {
+                        if(useDebugger) console.log('C.O.R.E exception', {core_pk_count, core_be_count, core_cr_count, dataLapse});
+                        core.pk.soc();
+                        return;
+                    }
                     core.hf.hydrateByClass();
                     core.hf.formatByClass();
                     //build the route directive from the DOM
@@ -643,10 +651,14 @@ const core = (() => {
                 soc: () => {
                     //don't continue until all preloaded backend data is loaded
                     if(core_be_count){
-                        setTimeout(()=>{
-                            core.pk.soc();
-                        },100);
-                        if(useDebugger) console.log('C.O.R.E preloading requested data/templates(' + core_be_count + ').');
+                        if(timedOut) {
+                            core.pk.eoc();
+                        }else{
+                            setTimeout(()=>{
+                                core.pk.soc();
+                            },100);
+                            if(useDebugger) console.log('C.O.R.E preloading requested data/templates(' + core_be_count + ').');
+                        }
                         return;
                     }
 
@@ -657,7 +669,7 @@ const core = (() => {
                     core.pk.getTemplate();
                 },
                 getTemplate: () => {
-                    stackCount++;
+                    core_pk_count++;
 
                     if(!stackTs){
                         stackTs = core.hf.date(null,'perf');
@@ -691,7 +703,7 @@ const core = (() => {
                         }
                     }
 
-                    stackCount--;
+                    core_pk_count--;
 
                     //check for complete objects or timeout
                     if(requiredTempList.length === pass.length || core.hf.date(null,'ts') - templateStart > core.pk.timeout){
@@ -708,10 +720,10 @@ const core = (() => {
                     }
 
                     //End of Call
-                    if(!stackCount) core.pk.eoc();
+                    core.pk.eoc();
                 },
                 addTemplate: () => {
-                    stackCount++;
+                    core_pk_count++;
                     //find the pocket elements
                     let pockets = document.getElementsByClassName('pckt');
                     for (const pocket of pockets){
@@ -734,12 +746,12 @@ const core = (() => {
                         }
                     }
                     core.pk.getData();
-                    stackCount--;
+                    core_pk_count--;
                 },
                 getData: () => {
-                    stackCount++;
+                    core_pk_count++;
                     if(!dataStart){
-                        dataStart = core.hf.date(null,'ts');
+                        dataStart = core.hf.date(null,'perf');
                     }
                     //find the clone elements
                     let clones = document.getElementsByClassName('pk-clone');
@@ -751,6 +763,7 @@ const core = (() => {
                         const records = core.cr.getData(dataRef);
                         //get data if not available
                         if(records){
+                            dataList = dataList.filter(item => item !== dataRef);
                             pass.push(true);
                         }else if(!dataList.includes(dataRef)){
                             dataList.push(dataRef);
@@ -759,7 +772,15 @@ const core = (() => {
                     }
 
                     //check for complete objects or timeout
-                    if(clones.length === pass.length || core.hf.date(null,'ts') - dataStart > timeout){
+                    dataEnd = core.hf.date(null,'perf');
+                    if(clones.length === pass.length || (dataEnd - dataStart) > timeout){
+                        dataLapse = (dataEnd - dataStart).toFixed(1);
+                        if(dataLapse > timeout){
+                            timedOut = true;
+                            if(useDebugger) console.log('C.O.R.E timed out due to setting of ' + timeout + 'ms.');
+                        }else{
+                            if(useDebugger) console.log('C.O.R.E loaded data (' + dataList.length + ') in ' + dataLapse + 'ms.', clones.length, pass.length);
+                        }
                         //reset the checks
                         dataStart = null;
                         dataList  = [];
@@ -768,12 +789,12 @@ const core = (() => {
                     } else {
                         setTimeout(()=>{
                             core.pk.getData();
-                        },250);
+                        },100);
                     }
-                    stackCount--;
+                    core_pk_count--;
                 },
                 addData: () => {
-                    stackCount++;
+                    core_pk_count++;
                     //find the clone elements
                     let clones = document.getElementsByClassName('pk-clone');
                     for (const clone of clones){
@@ -797,10 +818,10 @@ const core = (() => {
                     for (const link of links){
                         core.hf.addClickListener(link);
                     }
-                    stackCount--;
+                    core_pk_count--;
                 },
                 cloner: (records = [], templateRef) => {
-                    stackCount++;
+                    core_pk_count++;
                     let newTemplateStr = '';
                     let count          = 0;
                     for (const record of records) {
@@ -827,7 +848,7 @@ const core = (() => {
                         count++;
                         newTemplateStr = newTemplateStr + ' ' + newString;
                     }
-                    stackCount--;
+                    core_pk_count--;
                     return newTemplateStr;
                 },
             }
@@ -1083,6 +1104,9 @@ const core = (() => {
                                 break;
                             case 'padright':
                                 value = value.padEnd((count || 4), (pad || '0'));
+                                break;
+                            case 'truncate':
+                                value = value.length < +clueFinal ? value : value.substring(0, +clueFinal) + '...';
                                 break;
                             case 'money':
                                 if(clueFinal === 'USD'){
