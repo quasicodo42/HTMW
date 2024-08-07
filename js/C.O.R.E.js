@@ -74,8 +74,8 @@ const core = (() => {
                     }
                     return fetchParams;
                 },
-                getData: (dataRef, dataSrc) => {
-                    const settings = core.be.preflight(dataRef, dataSrc, 'data');
+                getData: (dataRef, dataSrc, settings) => {
+                    settings = {...core.be.preflight(dataRef, dataSrc, 'data'), ...settings};
                     core_be_count++;
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
@@ -89,8 +89,8 @@ const core = (() => {
                         console.error(error);
                     });
                 },
-                getTemplate: (dataRef, dataSrc) => {
-                    const settings = core.be.preflight(dataRef, dataSrc, 'template');
+                getTemplate: (dataRef, dataSrc, settings) => {
+                    settings = {...core.be.preflight(dataRef, dataSrc, 'template'), ...settings};
                     core_be_count++;
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
