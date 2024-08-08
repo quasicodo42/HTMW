@@ -827,7 +827,7 @@ const core = (() => {
                     for (const record of records) {
                         let newString = templateRef; //TODO should be able to use item reference name
                         //replace the placeholders {{rec:name}}
-                        let placeholders = newString.match(/[^{\{]+(?=}\})/g) || [];
+                        let placeholders = newString.match(core.sv.regex.dblcurly) || [];
                         for(const placeholder of placeholders){
                             let [type, member, format, clue] = placeholder.split(':');
                             let value = record.hasOwnProperty(member) ? record[member] : null;
@@ -857,6 +857,7 @@ const core = (() => {
         sv: (() => {
             let regex        = {};
             regex.email      = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            regex.phoneUS    = /(\d{3})(\d{3})(\d{4})/;
             regex.numbers    = /[^0-9]/g;
             regex.floats     = /[^0-9.]/g;
             regex.alpha      = /[^A-Za-z]/g;
@@ -865,18 +866,18 @@ const core = (() => {
             regex.alphanumsp = /[^\w\s]/gi;
             regex.dblcurly   = /[^{\{]+(?=}\})/g;
             return{
-                format: function (value,formatStr,valueDefault) {
-                    let parts  = (formatStr || "default").split(".");
-                    let format = parts.shift().trim().toLowerCase();
-                    let param1 = parts.shift() || valueDefault; //default value
-                    let param2 = parts.shift(); //unused
+                get regex() {
+                    return regex;
+                },
+                format: function (value, formatStr, valueDefault) {
+                    let [format, vDefault, clue] = (formatStr || "default").split(".");
                     switch(format.toLowerCase()){
                         case "string":
                             value = String(value);
                             break;
                         case "number":
                             if (value !== null && value !== undefined && String(value).length) {
-                                value = parseFloat(String(value).replace(/[^0-9.]/g, "")) || null;
+                                value = parseFloat(String(value).replace(regex.floats, "")) || null;
                             }else{
                                 value = null;
                             }
@@ -885,9 +886,9 @@ const core = (() => {
                             value = String(value).split("").map(v=>v.charCodeAt(0)).reduce((a,v)=>a+((a<<7)+(a<<3))^v).toString(16);
                             break;
                         case "object":
-                            var result = {};
-                            var keys = Object.keys(value);
-                            var vals = Object.values(value);
+                            let result = {};
+                            let keys = Object.keys(value);
+                            let vals = Object.values(value);
                             keys.forEach((key, i) => result[key] = vals[i]);
                             value = result;
                             break;
@@ -923,13 +924,13 @@ const core = (() => {
                             break;
                         case "fax":
                         case "phone":
-                            var check = (value || "").replace(/[^0-9]/g, "");
+                            let check = (value || "").replace(regex.numbers, "");
                             if(value && check.length === 10){
-                                value = check.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+                                value = check.replace(regex.phoneUS, "($1) $2-$3");
                             }
                             break;
                     }
-                    return value || (param1 ? core.sv.format(param1,format) : value);
+                    return value || (vDefault ? core.sv.format(vDefault,format) : value);
                 },
                 scrub: function (scrubArr) {
                     //[{name:"name",value:"John",scrubs:["req","lower"]}]
@@ -1122,9 +1123,9 @@ const core = (() => {
                                 value = core.hf.date(value, clueFinal);
                                 break;
                             case 'phone':
-                                let check = String(value || "").replace(/[^0-9]/g, "");
+                                let check = String(value || "").replace(core.sv.regex.numbers, "");
                                 if(value && check.length === 10){
-                                    value = check.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+                                    value = check.replace(core.sv.regex.phoneUS, "($1) $2-$3");
                                 }
                                 break;
                             case 'removehtml':
