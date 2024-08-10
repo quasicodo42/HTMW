@@ -278,6 +278,46 @@ const core = (() => {
                         core.pk.soc();
                     });
                 },
+                ccNumAuth: (ccNum) => {
+                    // Remove spaces and non-digit characters
+                    ccNum = String(ccNum).replace(/\D/g, "");
+
+                    // Check if the number is empty or not a number
+                    if (!ccNum || isNaN(ccNum)) {
+                        return { isValid: false, type: "Invalid" };
+                    }
+
+                    // Luhn algorithm for validation
+                    let sum = 0;
+                    let alternate = false;
+                    for (let i = ccNum.length - 1; i >= 0; i--) {
+                        let digit = parseInt(ccNum.charAt(i), 10);
+                        if (alternate) {
+                            digit *= 2;
+                            if (digit > 9) {
+                                digit -= 9;
+                            }
+                        }
+                        sum += digit;
+                        alternate = !alternate;
+                    }
+
+                    const isValid = sum % 10 === 0;
+
+                    // Check card type based on prefix and length
+                    let type = "Unknown";
+                    if (/^3[47]/.test(ccNum) && ccNum.length === 15) {
+                        type = "American Express";
+                    } else if (/^5[1-5]/.test(ccNum) && ccNum.length === 16) {
+                        type = "MasterCard";
+                    } else if (/^4/.test(ccNum) && [13, 16].includes(ccNum.length)) {
+                        type = "Visa";
+                    } else if (/^6011/.test(ccNum) && ccNum.length === 16) {
+                        type = "Discover";
+                    }
+
+                    return {isValid,type};
+                },
                 copy: (text) => {
                     let successful = false;
                     let textarea   = document.createElement("textarea");
@@ -358,7 +398,6 @@ const core = (() => {
                         .replace('P', p)
                         .replace('TS', t);
                 },
-
                 /**
                  * Digs through an object looking for a value using a dot delimited string as a reference
                  * Examples:
@@ -900,7 +939,6 @@ const core = (() => {
                             value = value.toLowerCase();
                             break;
                         case 'money':
-                            console.log(clue);
                             if(clue === 'USD'){
                                 clue = '$';
                             }
@@ -1003,6 +1041,10 @@ const core = (() => {
                             case "num":
                                 eachResult.success = !isNaN(+scrubObj.value);
                                 eachResult.error = "Only numbers are allowed.";
+                                break;
+                            case "ccnum":
+                                eachResult.success = core.hf.ccNumAuth(scrubObj.value).isValid;
+                                eachResult.error = "A valid credit card number is required.";
                                 break;
                             case "alpha":
                                 eachResult.success = (scrubObj.value === scrubObj.value.replace(regex.alpha));
