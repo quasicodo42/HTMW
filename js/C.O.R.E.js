@@ -346,7 +346,7 @@ const core = (() => {
 
                     return output
                         .replace('HH', String(output.includes('P') ? H : h).padStart(2, '0'))
-                        .replace('H', String(output.includes('P') ? H : h))
+                        .replace('H', String(H))
                         .replace(':MM', ':' + String(m).padStart(2, '0')) //above Month
                         .replace(':SS', ':' + String(s).padStart(2, '0'))
                         .replace('DD', String(D).padStart(2, '0'))
@@ -870,64 +870,103 @@ const core = (() => {
                     return regex;
                 },
                 format: function (value, formatStr, valueDefault) {
-                    let [format, vDefault, clue] = (formatStr || "default").split(".");
+                    let [format, vDefault, clue] = String(formatStr || 'default').split('.');
+                    let [clueCount, cluePad]     = String(clue || '4|0').split('|');
                     switch(format.toLowerCase()){
-                        case "string":
-                            value = String(value);
+                        case 'alphaonly':
+                            value = value.replace(regex.alpha, '');
                             break;
-                        case "number":
+                        case 'array':
+                            value = Object.values(value);
+                            break;
+                        case 'boolean':
+                            value = (value && value !== "0" && String(value).toLowerCase() !== "false" ? true : false);
+                            break;
+                        case 'date':
+                        case 'datetime':
+                            value = core.hf.date(value, clue);
+                            break;
+                        case 'decimal':
+                            value = (+value).toFixed(2) + (clue || '');
+                            break
+                        case 'encrypt':
+                            value = value.split('').sort().reverse().join('');
+                            break;
+                        case 'float':
+                            value = value.replace(regex.floats, '');
+                            break;
+                        case 'email':
+                        case 'lower':
+                            value = value.toLowerCase();
+                            break;
+                        case 'money':
+                            console.log(clue);
+                            if(clue === 'USD'){
+                                clue = '$';
+                            }
+                            value = (clue === '$' ? clue : '') + (+value).toFixed(2);
+                            break;
+                        case 'nospace':
+                            value = value.split(' ').join('');
+                            break;
+                        case 'null':
+                            value = null;
+                            break;
+                        case 'number':
                             if (value !== null && value !== undefined && String(value).length) {
                                 value = parseFloat(String(value).replace(regex.floats, "")) || null;
                             }else{
                                 value = null;
                             }
                             break;
-                        case "tinyhash":
-                            value = String(value).split("").map(v=>v.charCodeAt(0)).reduce((a,v)=>a+((a<<7)+(a<<3))^v).toString(16);
+                        case 'numonly':
+                            value = value.replace(regex.numbers, '');
                             break;
-                        case "object":
+                        case 'object':
                             let result = {};
                             let keys = Object.keys(value);
                             let vals = Object.values(value);
                             keys.forEach((key, i) => result[key] = vals[i]);
                             value = result;
                             break;
-                        case "array":
-                            value = Object.values(value);
+                        case 'padleft':
+                            value = String(value).padStart(+clueCount, cluePad);
                             break;
-                        case "boolean":
-                            value = (value && value !== "0" && String(value).toLowerCase() !== "false" ? true : false);
+                        case 'padright':
+                            value = String(value).padEnd(+clueCount, cluePad);
                             break;
-                        case "null":
-                            value = null;
-                            break;
-                        case "nospace":
-                            value = value.split(' ').join('');
-                            break;
-                        case "alphaonly":
-                            value = value.replace(regex.alpha, '');
-                            break;
-                        case "numonly":
-                            value = value.replace(regex.numbers, '');
-                            break;
-                        case "float":
-                            value = value.replace(regex.floats, '');
-                            break;
-                        case "encrypt":
-                            value = value.split('').sort().reverse().join('');
-                            break;
-                        case "lower":
-                            value = value.toLowerCase();
-                            break;
-                        case "upper":
-                            value = value.toUpperCase();
-                            break;
-                        case "fax":
-                        case "phone":
-                            let check = (value || "").replace(regex.numbers, "");
+                        case 'fax':
+                        case 'phone':
+                            let check = String(value || "").replace(regex.numbers, "");
                             if(value && check.length === 10){
                                 value = check.replace(regex.phoneUS, "($1) $2-$3");
                             }
+                            break;
+                        case 'pk_attr':
+                            value = ' ' + clue + '="' + value + '" ';
+                            break
+                        case 'xpk_clonerx': //TODO not working in recursion
+                            value = core.pk.cloner(value, core.cr.getTemplate(clue) || 'not found');
+                            break;
+                        case 'removehtml':
+                            let tempElem = document.createElement('DIV');
+                            tempElem.innerHTML = value;
+                            value = tempElem.textContent || tempElem.innerText || '';
+                            break;
+                        case 'string':
+                            value = String(value);
+                            break;
+                        case 'tinyhash':
+                            value = String(value).split("").map(v=>v.charCodeAt(0)).reduce((a,v)=>a+((a<<7)+(a<<3))^v).toString(16);
+                            break;
+                        case 'truncate':
+                            value = value.length < +clue ? value : value.substring(0, +clue) + '...';
+                            break;
+                        case 'upper':
+                            value = value.toUpperCase();
+                            break;
+                        case 'upperfirst':
+                            value = value.charAt(0).toUpperCase() + value.slice(1);
                             break;
                     }
                     return value || (vDefault ? core.sv.format(vDefault,format) : value);
@@ -953,11 +992,7 @@ const core = (() => {
                     scrubObj.success = true;
 
                     scrubObj.scrubs.forEach(function (scrubs) {
-                        let parts  = scrubs.split(":");
-                        let format = parts.shift().trim().toLowerCase();
-                        let clue   = parts.shift();
-                        let param2 = parts.shift(); //unused
-
+                        let [format, clue, other] = String(scrubs).split(":").map(s => s.trim());
                         let eachResult  = {success:true,error:null};
                         switch(format){
                             case "fail":
@@ -1078,68 +1113,17 @@ const core = (() => {
                     formatList = formatList || [];
                     //check for pipe delimited string
                     if(typeof formatList === 'string') formatList = formatList.split('|');
-                    let [count, pad] = (clue || '4|0').split('|');
                     for(const formatItem of formatList){
                         //checking for format*clue format
                         let [formatName, clueOverride] = formatItem.split('*');
                         let clueFinal = (clueOverride || clue);
-                        switch(formatName){
-                            case 'pk_cloner':
-                                value = core.pk.cloner(value, core.cr.getTemplate(clue) || 'not found');
-                                break;
-                            case 'pk_attr':
-                                value = ' ' + clueFinal + '="' + value + '" ';
-                                break;
-                            case 'email':
-                            case 'lower':
-                                value = value.toLowerCase()
-                                break;
-                            case 'upper':
-                                value = value.toUpperCase();
-                                break;
-                            case 'upperfirst':
-                                value = value.charAt(0).toUpperCase() + value.slice(1);
-                                break;
-                            case 'padleft':
-                                value = value.padStart((count || 4), (pad || '0'));
-                                break;
-                            case 'padright':
-                                value = value.padEnd((count || 4), (pad || '0'));
-                                break;
-                            case 'truncate':
-                                value = value.length < +clueFinal ? value : value.substring(0, +clueFinal) + '...';
-                                break;
-                            case 'money':
-                                if(clueFinal === 'USD'){
-                                    clueFinal = '$';
-                                }
-                                value = (clueFinal === '$' ? clueFinal : '') + (+value).toFixed(2);
-                                break;
-                            case 'decimal':
-                                value = (+value).toFixed(2) + (clueFinal || '');
-                                break;
-                            case 'date':
-                            case 'datetime':
-                                value = core.hf.date(value, clueFinal);
-                                break;
-                            case 'phone':
-                                let check = String(value || "").replace(core.sv.regex.numbers, "");
-                                if(value && check.length === 10){
-                                    value = check.replace(core.sv.regex.phoneUS, "($1) $2-$3");
-                                }
-                                break;
-                            case 'removehtml':
-                                let tempElem = document.createElement('DIV');
-                                tempElem.innerHTML = value;
-                                value = tempElem.textContent || tempElem.innerText || '';
-                                break;
-                            case 'scrub':
-                                value = core.sv.format((count || 2), (pad || '&nbsp;'));
-                                break;
-                            default:
-                                if(typeof core.ux_modTemp === 'function'){
-                                    value = core.ux_modTemp(value, formatList, clue);
-                                }
+                        if(formatName === 'pk_cloner'){
+                            value = core.pk.cloner(value, core.cr.getTemplate(clueFinal) || 'not found');
+                        }else{
+                            value = core.sv.format(value, [formatName,'unavailable',clueFinal].join('.'),clueFinal)
+                            if(typeof core.ux_modTemp === 'function'){
+                                value = core.ux_modTemp(value, formatList, clue);
+                            }
                         }
                     }
                     return value;
