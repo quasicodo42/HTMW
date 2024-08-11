@@ -178,7 +178,7 @@ const core = (() => {
                     if(elem.dataset.hasOwnProperty(name)){
                         delete elem.dataset[name];
                     }
-                    //SESSION (Option C)
+                    //SESSION (Option C), elem is ignored
                     if(sessionStorage.getItem(name)){
                         sessionStorage.removeItem(name)
                     }
@@ -191,10 +191,10 @@ const core = (() => {
                     elem._customData = {[name]:data};
                     //STATIC (Option B)
                     elem.dataset[name] = JSON.stringify(data);
-                    //SESSION (Option C)
-                    sessionStorage.setItem(name,JSON.stringify(data));
+                    //SESSION (Option C), elem is ignored
+                    sessionStorage.setItem(name, JSON.stringify(data));
 
-                    return core.cr.getData(name);
+                    return core.cr.getData(name, elem);
                 },
                 getData: (name, elem) => {
                     elem = (elem || section);
@@ -206,7 +206,7 @@ const core = (() => {
                     if(elem.dataset.hasOwnProperty(name)){
                         return JSON.parse(elem.dataset[name]);
                     }
-                    //SESSION (Option C)
+                    //SESSION (Option C), elem is ignored
                     if(sessionStorage.getItem(name)){
                         return JSON.parse(sessionStorage.getItem(name));
                     }
