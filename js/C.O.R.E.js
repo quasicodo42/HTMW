@@ -5,8 +5,8 @@ let core_pk_count = 0;
 const core = (() => {
     const template  = document.createElement('template');
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
-    let useDebugger = true;
-    let useRouting  = true;
+    let useDebugger = false;
+    let useRouting  = false;
     if(document.readyState === 'complete' ){
         setTimeout(()=>{core.init()});
     } else {
@@ -147,10 +147,10 @@ const core = (() => {
         })(),
         //core functions
         cr: (() => {
-            let storageType = 0; //TODO not in use
+            let storageIdDefault = 1;
             return {
-                set storageType(value) {
-                    storageType = (+value || 0);
+                set storageIdDefault(value) {
+                    storageIdDefault = (+value || 0);
                 },
                 init: () => {
                     let preloaded = [];
@@ -168,46 +168,53 @@ const core = (() => {
                         core.cr.setTemplate('LOADING', '<marquee width="50%">loading...</marquee>');
                     }
                 },
-                delData: (name, elem) => {
-                    elem = (elem || section);
-                    //DOM (Option A)
-                    if(elem._customData && elem._customData.hasOwnProperty(name)){
-                        delete elem._customData[name];
-                    }
-                    //STATIC (Option B)
-                    if(elem.dataset.hasOwnProperty(name)){
+                delData: (name, elem, storageId) => {
+                    elem      = (elem || section);
+                    storageId = storageId || storageIdDefault;
+
+                    if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
+                        //DOM (Option A)
+                        delete elem._CORE_Data[name];
+                    }else if(storageId === 1 && elem.dataset.hasOwnProperty(name)){
+                        //STATIC (Option B)
                         delete elem.dataset[name];
-                    }
-                    //SESSION (Option C), elem is ignored
-                    if(sessionStorage.getItem(name)){
+                    }else if(storageId === 2 && sessionStorage.getItem(name)){
+                        //SESSION (Option C), elem is ignored
                         sessionStorage.removeItem(name)
                     }
                 },
-                setData: (name, data, elem) => {
-                    elem = (elem || section);
+                setData: (name, data, elem, storageId) => {
+                    elem      = (elem || section);
+                    storageId = storageId || storageIdDefault;
+
                     //delete previous data by name
                     core.cr.delData(name, elem);
-                    //DOM (Option A)
-                    elem._customData = {[name]:data};
-                    //STATIC (Option B)
-                    elem.dataset[name] = JSON.stringify(data);
-                    //SESSION (Option C), elem is ignored
-                    sessionStorage.setItem(name, JSON.stringify(data));
+
+                    if(storageId === 0){
+                        //DOM (Option A)
+                        elem._CORE_Data = {[name]:data};
+                    }else if(storageId === 1){
+                        //STATIC (Option B)
+                        elem.dataset[name] = JSON.stringify(data);
+                    }else if(storageId === 2){
+                        //SESSION (Option C), elem is ignored
+                        sessionStorage.setItem(name, JSON.stringify(data));
+                    }
 
                     return core.cr.getData(name, elem);
                 },
-                getData: (name, elem) => {
+                getData: (name, elem, storageId) => {
                     elem = (elem || section);
-                    //DOM (Option A)
-                    if(elem._customData && elem._customData.hasOwnProperty(name)){
-                        return elem._customData[name];
-                    }
-                    //STATIC (Option B)
-                    if(elem.dataset.hasOwnProperty(name)){
+                    storageId = storageId || storageIdDefault;
+
+                    if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
+                        //DOM (Option A)
+                        return elem._CORE_Data[name];
+                    }else if(storageId === 1 && elem.dataset.hasOwnProperty(name)){
+                        //STATIC (Option B)
                         return JSON.parse(elem.dataset[name]);
-                    }
-                    //SESSION (Option C), elem is ignored
-                    if(sessionStorage.getItem(name)){
+                    }else if(storageId === 2 && sessionStorage.getItem(name)){
+                        //SESSION (Option C), elem is ignored
                         return JSON.parse(sessionStorage.getItem(name));
                     }
                 },
