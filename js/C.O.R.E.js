@@ -1,4 +1,4 @@
-//C.O.R.E ver:20240725;
+//C.O.R.E ver:20240812.0;
 let core_be_count = 0;
 let core_cr_count = 0;
 let core_pk_count = 0;
@@ -244,7 +244,7 @@ const core = (() => {
                     }
                 },
                 addClickListener: (element) => {
-                    const dataRef = element.dataset.pkTemplates;
+                    const dataRef = element.dataset.coreTemplates;
                     const target  = (element.getAttribute('target') || 'main');
                     if(!dataRef) return;
                     //remove all listeners - replace element
@@ -255,8 +255,8 @@ const core = (() => {
                         event.preventDefault()
                         //set up the pocket
                         const pocket = document.createElement('div');
-                        pocket.classList.add('pckt');
-                        pocket.setAttribute('data-pk-templates', dataRef);
+                        pocket.classList.add('core-pocket');
+                        pocket.setAttribute('data-core-templates', dataRef);
                         //determine the location
                         let section;
                         if (target.includes('#')) {
@@ -605,7 +605,7 @@ const core = (() => {
                         const directive = JSON.parse(unescape(core.hf.getRoute('hash').split('#').join('')));
                         for(const settings of directive){
                             const pocket = document.createElement('div');
-                            pocket.classList.add('pckt');
+                            pocket.classList.add('core-pocket');
                             let nameList = [];
                             for(const item of settings.l){
                                 nameList.push(item.n);
@@ -613,7 +613,7 @@ const core = (() => {
                                     pocket.setAttribute('data-' + item.n + '-pk-source', item.u);
                                 }
                             }
-                            pocket.setAttribute('data-pk-templates', nameList.join(','));
+                            pocket.setAttribute('data-core-templates', nameList.join(','));
 
                             const target = settings.t;
                             //determine the location
@@ -653,18 +653,18 @@ const core = (() => {
                     core.hf.hydrateByClass();
                     core.hf.formatByClass();
                     //build the route directive from the DOM
-                    let pockets = document.getElementsByClassName('pckt');
+                    let pockets = document.getElementsByClassName('core-pocket');
                     for (const pocket of pockets) {
                         //get the parent
                         const parent = pocket.parentNode;
                         const target = '#' + parent.id;
                         //get the items
                         const lists = [];
-                        const templates = pocket.dataset.pkTemplates.split(',').map(s => s.trim());
+                        const templates = pocket.dataset.coreTemplates.split(',').map(s => s.trim());
                         for(const template of templates){
                             let list = {n:template};
-                            if(pocket.dataset[template + 'PkSource']){
-                                list.u = pocket.dataset[template + 'PkSource'];
+                            if(pocket.dataset[template + 'CoreSource']){
+                                list.u = pocket.dataset[template + 'CoreSource'];
                             }
                             lists.push(list);
                         }
@@ -721,10 +721,10 @@ const core = (() => {
                     const requiredTempList = [];
                     const pass = [];
 
-                    let pockets = document.getElementsByClassName('pckt');
+                    let pockets = document.getElementsByClassName('core-pocket');
                     for (const pocket of pockets){
                         //get the items
-                        const templates = pocket.dataset.pkTemplates.split(',').map(s => s.trim());
+                        const templates = pocket.dataset.coreTemplates.split(',').map(s => s.trim());
                         //fill the pockets w/items
                         for (const template of templates){
                             requiredTempList.push(template);
@@ -735,7 +735,7 @@ const core = (() => {
                             }else if(!templateList.includes(template)){
                                 //add loading
                                 pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate('LOADING'));
-                                const dataSrc = pocket.dataset[template + 'PkSource'];
+                                const dataSrc = pocket.dataset[template + 'CoreSource'];
                                 templateList.push(template);
                                 core.be.getTemplate(template, (dataSrc || template));
                             }
@@ -764,7 +764,7 @@ const core = (() => {
                 addTemplate: () => {
                     core_pk_count++;
                     //find the pocket elements
-                    let pockets = document.getElementsByClassName('pckt');
+                    let pockets = document.getElementsByClassName('core-pocket');
                     for (const pocket of pockets){
                         //empty the pocket
                         while (pocket.firstElementChild) {
@@ -773,14 +773,14 @@ const core = (() => {
                         //hide the pocket, shown when filled
                         pocket.style.display = 'none';
                         //get the items
-                        const templates = pocket.dataset.pkTemplates.split(',').map(s => s.trim());
+                        const templates = pocket.dataset.coreTemplates.split(',').map(s => s.trim());
                         //fill the pockets w/items
                         for (const template of templates){
                             core.cb.preflight(template, null, 'template');
                             pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(template));
                             core.cb.postflight(template, null, 'template');
                         }
-                        if(!pocket.getElementsByClassName('pk-clone').length){
+                        if(!pocket.getElementsByClassName('core-clone').length){
                             pocket.style.display = '';
                         }
                     }
@@ -793,12 +793,12 @@ const core = (() => {
                         dataStart = core.hf.date(null,'perf');
                     }
                     //find the clone elements
-                    let clones = document.getElementsByClassName('pk-clone');
+                    let clones = document.getElementsByClassName('core-clone');
                     let pass   = [];
 
                     for (const clone of clones){
-                        const dataRef = clone.dataset.pkData;
-                        const dataSrc = clone.dataset.pkSource;
+                        const dataRef = clone.dataset.coreData;
+                        const dataSrc = clone.dataset.coreSource;
                         const records = core.cr.getData(dataRef);
                         //get data if not available
                         if(records){
@@ -835,14 +835,14 @@ const core = (() => {
                 addData: () => {
                     core_pk_count++;
                     //find the clone elements
-                    let clones = document.getElementsByClassName('pk-clone');
+                    let clones = document.getElementsByClassName('core-clone');
                     for (const clone of clones){
-                        const dataRef = clone.dataset.pkData;
+                        const dataRef = clone.dataset.coreData;
                         const records = core.cr.getData(dataRef) || [];
                         const pattern = clone.cloneNode(true);
-                        pattern.id = pattern.id || 'pk-' + (Math.random() + 1).toString(36).substring(7);
-                        pattern.classList.remove("pk-clone");
-                        pattern.classList.add("pk-cloned");
+                        pattern.id = pattern.id || 'core-' + (Math.random() + 1).toString(36).substring(7);
+                        pattern.classList.remove("core-clone");
+                        pattern.classList.add("core-cloned");
                         core.cb.preflight(dataRef, records, 'data');
                         clone.insertAdjacentHTML('beforebegin', core.pk.cloner(records, pattern.outerHTML));
                         core.cb.postflight(dataRef, records, 'data');
@@ -850,7 +850,7 @@ const core = (() => {
                     //remove the clone templates
                     while(clones[0]) {
                         //show the pocket, previously hidden
-                        clones[0].closest('.pckt').style.display = '';
+                        clones[0].closest('.core-pocket').style.display = '';
                         clones[0].remove();
                     }
                     let links = document.getElementsByTagName('a');
@@ -980,10 +980,10 @@ const core = (() => {
                                 value = check.replace(regex.phoneUS, "($1) $2-$3");
                             }
                             break;
-                        case 'pk_attr':
+                        case 'core_pk_attr':
                             value = ' ' + clue + '="' + value + '" ';
                             break
-                        case 'xpk_clonerx': //TODO not working in recursion
+                        case 'core_pk_cloner': //TODO not working in recursion
                             value = core.pk.cloner(value, core.cr.getTemplate(clue) || 'not found');
                             break;
                         case 'removehtml':
@@ -1159,7 +1159,7 @@ const core = (() => {
                         //checking for format*clue format
                         let [formatName, clueOverride] = formatItem.split('*');
                         let clueFinal = (clueOverride || clue);
-                        if(formatName === 'pk_cloner'){
+                        if(formatName === 'core_pk_cloner'){
                             value = core.pk.cloner(value, core.cr.getTemplate(clueFinal) || 'not found');
                         }else{
                             value = core.sv.format(value, [formatName,'unavailable',clueFinal].join('.'),clueFinal)

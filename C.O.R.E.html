@@ -14,11 +14,12 @@
 <div class="container">
     <nav class="nav">
         <a href="?" class="nav-link" >home</a>
-        <a href="#" class="nav-link" target="#main" data-pk-templates="other">change</a>
-        <a href="#" class="nav-link" target="#main" data-pk-templates="default,stuff">change back</a>
-        <a href="#" class="nav-link" target="#under" data-pk-templates="stuff">add stuff</a>
-        <a href="#" class="nav-link" target="#under" data-pk-templates="EMPTY">remove stuff</a>
-        <a href="#" class="nav-link" target="#main" data-pk-templates="user">account</a>
+        <a href="#" class="nav-link" target="#main" data-core-templates="other">change</a>
+        <a href="#" class="nav-link" target="#main" data-core-templates="default,stuff">change back</a>
+        <a href="#" class="nav-link" target="#under" data-core-templates="stuff">add stuff</a>
+        <a href="#" class="nav-link" target="#under" data-core-templates="EMPTY">remove stuff</a>
+        <a href="#" class="nav-link" target="#main" data-core-templates="user">account</a>
+        <a href="#" class="nav-link" target="#main" data-core-templates="news">Scammer News</a>
     </nav>
 </div>
 
@@ -33,7 +34,7 @@
 
 <div class="container">
     <div id="main">
-        <div class="pckt" data-pk-templates="default,stuff,deep" data-default-pk-source="https://zzzap.io/Forms/login"></div>
+        <div class="core-pocket" data-core-templates="default,stuff,deep" data-default-core-source="https://zzzap.io/Forms/login"></div>
     </div>
     <div id="under"></div>
 </div>
@@ -55,7 +56,7 @@
     </footer>
 </div>
 
-<!-- pckt storage elements -->
+<!-- core-pocket storage elements -->
 <section id="cr-data" style="display:none;">
     <template name="other">
         <h1>Hello World!</h1>
@@ -66,7 +67,7 @@
             <p>—<cite class="h--quote-author">Mother</cite></p>
         </div>
         <div id="header">This will be <strong>good</strong>.</div>
-        <a href="#" class="nav-link" target="#main" data-pk-templates="deep">recursive</a>
+        <a href="#" class="nav-link" target="#main" data-core-templates="deep">recursive</a>
     </template>
     <template name="stuff">
         <table class="table">
@@ -82,7 +83,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr class="pk-clone" data-pk-data="users" data-pk-source="https://dummyjson.com/users?limit=5">
+            <tr class="core-clone" data-core-data="users" data-core-source="https://dummyjson.com/users?limit=5">
                 <td>{{aug:count}})</td>
                 <td>{{rec:firstName:upperfirst}} {{rec:lastName:upperfirst}}</td>
                 <td>{{rec:height:decimal:cm}}</td>
@@ -95,9 +96,9 @@
         </table>
         <hr>
         <div class="row">
-            <div class="pk-clone col-sm-3" data-pk-data="prods" data-pk-source="https://dummyjson.com/products?limit=12">
+            <div class="core-clone col-sm-3" data-core-data="prods" data-core-source="https://dummyjson.com/products?limit=12">
                 <div class="card">
-                    <img class="card-img-top" {{rec:thumbnail:pk_attr:src}} alt="Card image cap">
+                    <img class="card-img-top" {{rec:thumbnail:core_pk_attr:src}} alt="Card image cap">
                     <div class="card-body">
                         <h5 class="card-title">{{rec:title}}</h5>
                         <p class="card-text">{{rec:description}}</p>
@@ -113,20 +114,24 @@
         <div class="container">
             <h3>Recursive Cloning</h3>
             <div class="row">
-                <div class="pk-clone col-sm-4" data-pk-data="pop">
+                <div class="core-clone col-sm-4" data-core-data="pop">
                     <span class="text-secondary">{{rec:name:upper}}</span> paid {{rec:paid:money:$}} on {{rec:ts:date:date}} for a {{rec:stuff.food}}.
-                    <div>{{rec:more:pk_cloner:colors}}</div>
+                    <div>{{rec:more:core_pk_cloner:colors}}</div>
                 </div>
             </div>
         </div>
     </template>
     <template name="colors">
         {{aug:index}} - <strong>{{rec:color}}</strong><br>
-        <div class="bg-light ps-3">{{rec:hues:pk_cloner:colors}}</div>
+        <div class="bg-light ps-3">{{rec:hues:core_pk_cloner:colors}}</div>
     </template>
 </section>
 <script src="/js/C.O.R.E.js"></script>
 <script>
+    //C.O.R.E setup
+    core.useRouting  = false;
+    core.useDebugger = core.hf.getRoute().includes('localhost');
+
     //--CUSTOM FUNCTIONS--//
 
     //callback pre/post UX insertions
@@ -139,13 +144,14 @@
         let settings = {dataRef:dataRef, dataSrc:dataSrc, type:type};
         if(type.includes('temp')){
             if(dataRef === dataSrc){
-                dataSrc = '/html/CORE/' + dataSrc + '.html'
+                settings.dataSrc = '/html/CORE/' + dataRef + '.html'
             }
         }else if(type === 'data'){
             if(dataRef === 'joke'){
                 settings.fetchParams = {mode: "no-cors"};
             }
         }
+        if(core.useDebugger) console.log('be_preflight',{dataRef, dataSrc, type});
         return settings;
     }
 
@@ -158,10 +164,24 @@
                 case 'users':
                     dataObj = dataObj.users;
                     break;
+                case 'news':
+                    let ignoreList   = ['russia','chinese','china','.co.uk','macworld'];
+                    let cleanResults = [];
+                    if(dataObj.hasOwnProperty('results')){
+                        for(const result of dataObj.results){
+                            const strResult = JSON.stringify(result).toLowerCase();
+                            if(!ignoreList.some(v => strResult.includes(v.toLowerCase()))){
+                                cleanResults.push(result);
+                            }
+                        }
+                    }
+                    dataObj = cleanResults;
+                    break;
             }
         }else{
             //TODO
         }
+        if(core.useDebugger) console.log('cb_postflight',{dataRef, dataObj, type});
         return dataObj;
     }
 

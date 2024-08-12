@@ -1,0 +1,26 @@
+<!-- news -->
+<div class="container m-4">
+    <h3 class="text-primary">Scammer Highlights</h3>
+    <p>Don't be in the news and trust nothing that demands your private information</p>
+</div>
+
+<div class="container">
+    <div class="core-clone col-sm-12 mb-3" data-core-data="news" data-core-source="https://newsdata.io/api/1/news?apikey=pub_499644bc0f473c4fa28fc8e472d99213ee5b3&q=phishing&country=gb,us&language=en&category=crime,education,technology">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-2 col-sm-12">
+                        <a href="{{rec:source_url}}" target="{{rec:source_id}}"><img {{rec:source_icon:core_pk_attr:src}} {{rec:source_id:pk_attr:alt}} class="w-50" onerror="$(this).remove()"></a>
+                        <a href="{{rec:link}}" class="btn btn-sm btn-outline-primary mt-3" target="_blank">View</a>
+                    </div>
+                    <div class="col-lg-10 col-sm-12">
+                        <p class="mb-0"><small class="text-muted f-datetime">{{rec:pubDate}}</small></p>
+                        <h5 class="card-title text-secondary"><span class="f-padleft" data-f-clue="2|0">{{aug:count}}</span> {{rec:title}}</h5>
+                        <p class="card-text f-null-checker f-truncate" data-f-default="..." data-f-clue="200">{{rec:description}}</p>
+                        <p class="card-text text-light">Source: <span>{{rec:source_name}}</span> in <span class="f-upper">{{rec:category.[n]}}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

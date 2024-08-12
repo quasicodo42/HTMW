@@ -26,13 +26,13 @@
 ####SPECIAL - deep cloning
 ```javascript
 {{type:list-of-objects:keyword:template-name}}
-{{rec:items:pk_cloner:item}}
+{{rec:items:core_pk_cloner:item}}
 ```
 
 ####SPECIAL - HTML inline attributes
 ```javascript
 {{type:object-member:keyword:tag-attribute}}
-{{rec:thumbnail:pk_attr:src}}
+{{rec:thumbnail:core_pk_attr:src}}
 ```
 
 ####SAMPLE - minimum usage
