@@ -251,9 +251,9 @@ const core = (() => {
                     }
                 },
                 addClickListener: (element) => {
-                    const dataRef = element.dataset.coreTemplates;
+                    const dataRefs = element.dataset.coreTemplates;
                     const target  = (element.getAttribute('target') || 'main');
-                    if(!dataRef) return;
+                    if(!dataRefs) return;
                     //remove all listeners - replace element
                     const newElement = element.cloneNode(true);
                     element.parentNode.replaceChild(newElement, element);
@@ -261,28 +261,7 @@ const core = (() => {
                     newElement.addEventListener('click', (event) => {
                         event.preventDefault()
                         //set up the pocket
-                        const pocket = document.createElement('div');
-                        pocket.classList.add('core-pocket');
-                        pocket.setAttribute('data-core-templates', dataRef);
-                        //determine the location
-                        let section;
-                        if (target.includes('#')) {
-                            section = document.getElementById(target.replace('#', ''));
-                        } else if (target.includes('.')) {
-                            section = document.getElementsByClassName(target.replace('.', ''))[0]; //first only
-                        } else {
-                            section = document.getElementsByTagName(target)[0]; //first only
-                        }
-                        if(section) {
-                            //empty the section
-                            while (section.firstElementChild) {
-                                section.firstElementChild.remove();
-                            }
-                            //add the pocket to DOM
-                            section.append(pocket);
-                        }
-                        //fill pockets with templates
-                        core.pk.soc();
+                        core.ux.insertPocket(target, dataRefs);
                     });
                 },
                 ccNumAuth: (ccNum) => {
@@ -606,40 +585,23 @@ const core = (() => {
                     timeout = (+value || 2000);
                 },
                 init: () => {
+                    //check to use routing info for pocket setup
                     const hash = core.hf.getRoute('hash');
-                    if(hash && hash.includes(escape('"t"')) && hash.includes(escape('"l"')) && hash.includes(escape('"n"'))){
+                    if(useRouting && hash && hash.includes(escape('"t"')) && hash.includes(escape('"l"')) && hash.includes(escape('"n"'))){
                         //build the UX according to the incoming hash directive
                         const directive = JSON.parse(unescape(core.hf.getRoute('hash').split('#').join('')));
                         for (const settings of directive){
-                            const pocket = document.createElement('div');
-                            pocket.classList.add('core-pocket');
-                            let nameList = [];
+                            let nameList    = [];
+                            let dataSources = [];
                             for (const item of settings.l){
                                 nameList.push(item.n);
                                 if(item.hasOwnProperty('u')){
-                                    pocket.setAttribute('data-' + item.n + '-pk-source', item.u);
+                                    dataSources.push({name:item.n,url:item.u});
                                 }
                             }
-                            pocket.setAttribute('data-core-templates', nameList.join(','));
-
-                            const target = settings.t;
-                            //determine the location
-                            let section;
-                            if (target.includes('#')) {
-                                section = document.getElementById(target.replace('#', ''));
-                            } else if (target.includes('.')) {
-                                section = document.getElementsByClassName(target.replace('.', ''))[0]; //first only
-                            } else {
-                                section = document.getElementsByTagName(target)[0]; //first only
-                            }
-                            if(section) {
-                                //empty the section
-                                while (section.firstElementChild) {
-                                    section.firstElementChild.remove();
-                                }
-                                //add the pocket to DOM
-                                section.append(pocket);
-                            }
+                            const target   = settings.t;
+                            const dataRefs = nameList.join(','); //string
+                            core.ux.insertPocket(target, dataRefs, dataSources, false);
                         }
                     }
                     core.pk.soc();
@@ -1179,6 +1141,37 @@ const core = (() => {
                         }
                     }
                     return value;
+                },
+                insertPocket: (target, dataRefs, sources = [], autoFill = true) => {
+                    if(!dataRefs) return;
+                    //set up the pocket
+                    const pocket = document.createElement('div');
+                    pocket.classList.add('core-pocket');
+                    pocket.setAttribute('data-core-templates', dataRefs);
+                    if(sources.length){
+                        for(const source of sources){
+                            pocket.setAttribute('data-' + source.name + '-core-source', source.url);
+                        }
+                    }
+                    //determine the location
+                    let section;
+                    if (target.includes('#')) {
+                        section = document.getElementById(target.replace('#', ''));
+                    } else if (target.includes('.')) {
+                        section = document.getElementsByClassName(target.replace('.', ''))[0]; //first only
+                    } else {
+                        section = document.getElementsByTagName(target)[0]; //first only
+                    }
+                    if(section) {
+                        //empty the section
+                        while (section.firstElementChild) {
+                            section.firstElementChild.remove();
+                        }
+                        //add the pocket to DOM
+                        section.append(pocket);
+                    }
+                    //fill pockets with templates
+                    if(autoFill) core.pk.soc();
                 }
             }
         })(),
