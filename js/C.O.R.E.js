@@ -1154,14 +1154,39 @@ const core = (() => {
                 },
                 insertPocket: (target, dataRefs, dataSources = [], autoFill = true) => {
                     if(!dataRefs) return;
+                    let isSilent = target.includes('core_be_get');
+                    let isData   = target.includes('Data');
                     //set up the pocket
                     const pocket = document.createElement('div');
                     pocket.classList.add('core-pocket');
                     pocket.setAttribute('data-core-templates', dataRefs);
+                    let ignoreTemplates = [];
                     if(dataSources.length){
                         for(const source of dataSources){
                             pocket.setAttribute('data-' + source.name + '-core-source', source.url);
+                            if(isSilent){
+                                ignoreTemplates.push(source.name);
+                                if(isData){
+                                    core.be.getData(source.name, source.url);
+                                }else{
+                                    core.be.getTemplate(source.name, source.url);
+                                }
+                            }
                         }
+                    }
+                    if(isSilent){
+                        const templates = dataRefs.split(',').map(s => String(s).trim()).filter(Boolean);
+                        for(const template of templates){
+                            if(!templates.includes(template)){
+                                if(isData){
+                                    core.be.getData(template);
+                                }else{
+                                    core.be.getTemplate(template);
+                                }
+                            }
+                        }
+                        delete pocket;
+                        return;
                     }
                     //determine the location
                     let section;

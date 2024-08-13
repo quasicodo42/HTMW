@@ -50,3 +50,9 @@
 {{aug:index}} {{aug:i}}
 {{aug:count}} {{aug:c}}
 ```
+
+####KEYWORDS
+```javascript
+core_be_getData - 'used as an anchor target for silent data calls'
+core_be_getTemplate - 'used as an anchor target for silent template calls'
+```
