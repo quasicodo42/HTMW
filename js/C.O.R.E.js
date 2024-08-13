@@ -49,9 +49,9 @@ const core = (() => {
                         //referrerPolicy: "no-referrer",           // *no-referrer-when-downgrade, no-referrer, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
                     }
 
-                    //checking for an array of headers
+                    //checking for an key/value object of header pairs
                     if('headers' in settings && settings.headers && Object.entries(settings.headers).length){
-                        fetchParams.header = settings.headers;
+                        fetchParams.headers = settings.headers;
                     }
 
                     if('fetchParams' in settings && settings.fetchParams && Object.entries(settings.fetchParams).length){
