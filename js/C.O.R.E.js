@@ -7,7 +7,7 @@ const core = (() => {
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
     let useDebugger = false;
     let useRouting  = false;
-    if(document.readyState === 'complete' ){
+    if(document.readyState === 'complete'){
         setTimeout(()=>{core.init()});
     } else {
         document.addEventListener('DOMContentLoaded', () => {
@@ -420,7 +420,7 @@ const core = (() => {
                     if(typeof ref === 'string'){
                         ref = ref.split(ref.includes(',') ? ',' : '.');
                     }
-                    let member = ref.shift();
+                    let member = (ref || []).shift();
                     if(!isNaN(+member)){
                         member = +member; //try an index
                     }else if(member === '[n]' && Array.isArray(object)){
