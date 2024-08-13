@@ -519,9 +519,9 @@ const core = (() => {
                  */
                 hydrateByClass: () => {
                     const elements = document.querySelectorAll('[class^="h-"],[class*=" h-"]');
-                    for(const element of elements){
+                    for (const element of elements){
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
-                        for(const hClass of hClasses){
+                        for (const hClass of hClasses){
                             const [ref, cache, member] = hClass.split('--').join('-').split('-');
                             const data     = (core.cr.getData(cache) || {[member]:''});
                             const tag      = element.tagName;
@@ -558,7 +558,7 @@ const core = (() => {
                  */
                 formatByClass: () => {
                     const elements = document.querySelectorAll('[class^="f-"],[class*=" f-"]');
-                    for(const element of elements){
+                    for (const element of elements){
                         const fClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('f-')});
                         let value      = element.innerHTML;
                         //check for possible arguments
@@ -566,7 +566,7 @@ const core = (() => {
                         let fClue    = (element.dataset.fClue || null);
 
                         //begin formatting
-                        for(const fClass of fClasses){
+                        for (const fClass of fClasses){
                             const delClass = !fClass.includes('f--');
                             //take care of nulls/empties
                             if(value === 'null' || !value.length){
@@ -610,11 +610,11 @@ const core = (() => {
                     if(hash && hash.includes(escape('"t"')) && hash.includes(escape('"l"')) && hash.includes(escape('"n"'))){
                         //build the UX according to the incoming hash directive
                         const directive = JSON.parse(unescape(core.hf.getRoute('hash').split('#').join('')));
-                        for(const settings of directive){
+                        for (const settings of directive){
                             const pocket = document.createElement('div');
                             pocket.classList.add('core-pocket');
                             let nameList = [];
-                            for(const item of settings.l){
+                            for (const item of settings.l){
                                 nameList.push(item.n);
                                 if(item.hasOwnProperty('u')){
                                     pocket.setAttribute('data-' + item.n + '-pk-source', item.u);
@@ -667,8 +667,9 @@ const core = (() => {
                         const target = '#' + parent.id;
                         //get the items
                         const lists = [];
-                        const templates = pocket.dataset.coreTemplates.split(',').map(s => s.trim());
-                        for(const template of templates){
+                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => s.trim());
+                        for (const template of templates){
+                            if(!template) continue;
                             let list = {n:template};
                             if(pocket.dataset[template + 'CoreSource']){
                                 list.u = pocket.dataset[template + 'CoreSource'];
@@ -731,9 +732,10 @@ const core = (() => {
                     let pockets = document.getElementsByClassName('core-pocket');
                     for (const pocket of pockets){
                         //get the items
-                        const templates = pocket.dataset.coreTemplates.split(',').map(s => s.trim());
-                        //fill the pockets w/items
+                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => s.trim());
                         for (const template of templates){
+                            if(!template) continue;
+                            //fill the pockets w/items
                             requiredTempList.push(template);
                             let hasTemplate = core.cr.getTemplate(template);
                             //get data if not available
@@ -780,9 +782,10 @@ const core = (() => {
                         //hide the pocket, shown when filled
                         pocket.style.display = 'none';
                         //get the items
-                        const templates = pocket.dataset.coreTemplates.split(',').map(s => s.trim());
-                        //fill the pockets w/items
+                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => s.trim());
                         for (const template of templates){
+                            if(!template) continue;
+                            //fill the pockets w/items
                             core.cb.preflight(template, null, 'template');
                             pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(template));
                             core.cb.postflight(template, null, 'template');
@@ -874,7 +877,7 @@ const core = (() => {
                         let newString = templateRef; //TODO should be able to use item reference name
                         //replace the placeholders {{rec:name}}
                         let placeholders = newString.match(core.sv.regex.dblcurly) || [];
-                        for(const placeholder of placeholders){
+                        for (const placeholder of placeholders){
                             let [type, member, format, clue] = placeholder.split(':');
                             let value = record.hasOwnProperty(member) ? record[member] : null;
                             switch(type){
@@ -1162,7 +1165,7 @@ const core = (() => {
                     formatList = formatList || [];
                     //check for pipe delimited string
                     if(typeof formatList === 'string') formatList = formatList.split('|');
-                    for(const formatItem of formatList){
+                    for (const formatItem of formatList){
                         //checking for format*clue format
                         let [formatName, clueOverride] = formatItem.split('*');
                         let clueFinal = (clueOverride || clue);
