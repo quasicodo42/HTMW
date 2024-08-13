@@ -254,13 +254,14 @@ const core = (() => {
                     const dataRefs = element.dataset.coreTemplates;
                     const target  = (element.getAttribute('target') || 'main');
                     if(!dataRefs) return;
-                    //check for sources
-                    let sources = [];
+                    //check for data sources
+                    let dataSources = [];
                     //pocket.dataset[template + 'CoreSource']
-                    for(const template of dataRefs.split(',')){
+                    const templates = dataRefs.split(',').map(s => String(s).trim()).filter(Boolean);
+                    for(const template of templates){
                         const source = element.dataset[template + 'CoreSource'];
                         if(source){
-                            sources.push({name:template, url:source});
+                            dataSources.push({name:template, url:source});
                         }
                     }
                     //remove all listeners - replace element
@@ -270,7 +271,7 @@ const core = (() => {
                     newElement.addEventListener('click', (event) => {
                         event.preventDefault()
                         //set up the pocket
-                        core.ux.insertPocket(target, dataRefs, sources);
+                        core.ux.insertPocket(target, dataRefs, dataSources);
                     });
                 },
                 ccNumAuth: (ccNum) => {
@@ -638,7 +639,7 @@ const core = (() => {
                         const target = '#' + parent.id;
                         //get the items
                         const lists = [];
-                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => s.trim());
+                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => String(s).trim()).filter(Boolean);
                         for (const template of templates){
                             if(!template) continue;
                             let list = {n:template};
@@ -703,7 +704,7 @@ const core = (() => {
                     let pockets = document.getElementsByClassName('core-pocket');
                     for (const pocket of pockets){
                         //get the items
-                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => s.trim());
+                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => String(s).trim()).filter(Boolean);
                         for (const template of templates){
                             if(!template) continue;
                             //fill the pockets w/items
@@ -753,7 +754,7 @@ const core = (() => {
                         //hide the pocket, shown when filled
                         pocket.style.display = 'none';
                         //get the items
-                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => s.trim());
+                        const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => String(s).trim()).filter(Boolean);
                         for (const template of templates){
                             if(!template) continue;
                             //fill the pockets w/items
@@ -1011,7 +1012,7 @@ const core = (() => {
                     scrubObj.success = true;
 
                     scrubObj.scrubs.forEach(function (scrubs) {
-                        let [format, clue, other] = String(scrubs).split(":").map(s => s.trim());
+                        let [format, clue, other] = String(scrubs).split(":").map(s => String(s).trim()).filter(Boolean);
                         let eachResult  = {success:true,error:null};
                         switch(format){
                             case "fail":
@@ -1151,14 +1152,14 @@ const core = (() => {
                     }
                     return value;
                 },
-                insertPocket: (target, dataRefs, sources = [], autoFill = true) => {
+                insertPocket: (target, dataRefs, dataSources = [], autoFill = true) => {
                     if(!dataRefs) return;
                     //set up the pocket
                     const pocket = document.createElement('div');
                     pocket.classList.add('core-pocket');
                     pocket.setAttribute('data-core-templates', dataRefs);
-                    if(sources.length){
-                        for(const source of sources){
+                    if(dataSources.length){
+                        for(const source of dataSources){
                             pocket.setAttribute('data-' + source.name + '-core-source', source.url);
                         }
                     }
