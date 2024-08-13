@@ -7,7 +7,7 @@ const core = (() => {
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
     let useDebugger = false;
     let useRouting  = false;
-    if(document.readyState === 'complete'){
+    if(document.readyState === 'complete') {
         setTimeout(()=>{core.init()});
     } else {
         document.addEventListener('DOMContentLoaded', () => {
@@ -254,6 +254,15 @@ const core = (() => {
                     const dataRefs = element.dataset.coreTemplates;
                     const target  = (element.getAttribute('target') || 'main');
                     if(!dataRefs) return;
+                    //check for sources
+                    let sources = [];
+                    //pocket.dataset[template + 'CoreSource']
+                    for(const template of dataRefs.split(',')){
+                        const source = element.dataset[template + 'CoreSource'];
+                        if(source){
+                            sources.push({name:template, url:source});
+                        }
+                    }
                     //remove all listeners - replace element
                     const newElement = element.cloneNode(true);
                     element.parentNode.replaceChild(newElement, element);
@@ -261,7 +270,7 @@ const core = (() => {
                     newElement.addEventListener('click', (event) => {
                         event.preventDefault()
                         //set up the pocket
-                        core.ux.insertPocket(target, dataRefs);
+                        core.ux.insertPocket(target, dataRefs, sources);
                     });
                 },
                 ccNumAuth: (ccNum) => {
