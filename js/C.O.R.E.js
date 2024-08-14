@@ -5,8 +5,8 @@ let core_pk_count = 0;
 const core = (() => {
     const template  = document.createElement('template');
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
-    let useDebugger = false;
-    let useRouting  = false;
+    let useDebugger = false; //user setting
+    let useRouting  = false; //user setting
     if(document.readyState === 'complete') {
         setTimeout(()=>{core.init()});
     } else {
@@ -38,7 +38,33 @@ const core = (() => {
         },
         //backend functions
         be: (() => {
+            let cacheCreateTs      = {data:{},template:{}};
+            let cacheExpire        = {data:{},template:{}}; //user setting
+            let cacheExpireDefault = 86400; //user setting, in seconds
             return {
+                get cacheCreateTs() {
+                    return cacheCreateTs;
+                },
+                set cacheExpire(obj) {
+                    //type is either data or template
+                    //format: {type:'data',name:'quote',seconds:5}
+                    if(core.hf.digData(obj,'type') && core.hf.digData(obj,'name') && core.hf.digData(obj,'seconds')){
+                        cacheExpire[obj.type][obj.name] = (+obj.seconds || 0);
+                    }
+                },
+                get cacheExpire() {
+                    return cacheExpire;
+                },
+                set cacheExpireDefault(value) {
+                    cacheExpireDefault = (+value || 0);
+                },
+                setCacheTs: (dataRef, type) => {
+                    cacheCreateTs[type][dataRef] = core.hf.date(null,'ts');
+                },
+                checkCacheTs: (dataRef, type) => {
+                    const cacheLife = cacheExpire[type][dataRef] || cacheExpireDefault;
+                    return (cacheCreateTs[type][dataRef] || core.hf.date(null,'ts')) + cacheLife > core.hf.date(null,'ts');
+                },
                 setGetParams: (settings) => {
                     let fetchParams = {
                         method: (settings.method || 'GET'),        // *GET, POST, PUT, PATCH, DELETE, etc.
@@ -76,6 +102,7 @@ const core = (() => {
                 },
                 getData: (dataRef, dataSrc, settings) => {
                     settings = {...core.be.preflight(dataRef, dataSrc, 'data'), ...settings};
+                    core.be.setCacheTs(dataRef, 'data');
                     core_be_count++;
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
@@ -91,6 +118,7 @@ const core = (() => {
                 },
                 getTemplate: (dataRef, dataSrc, settings) => {
                     settings = {...core.be.preflight(dataRef, dataSrc, 'template'), ...settings};
+                    core.be.setCacheTs(dataRef, 'template');
                     core_be_count++;
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
@@ -145,7 +173,7 @@ const core = (() => {
                 },
             }
         })(),
-        //core functions
+        //create functions
         cr: (() => {
             let storageIdDefault = 1;
             return {
@@ -207,15 +235,21 @@ const core = (() => {
                     elem = (elem || section);
                     storageId = storageId || storageIdDefault;
 
-                    if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
-                        //DOM (Option A)
-                        return elem._CORE_Data[name];
-                    }else if(storageId === 1 && elem.dataset.hasOwnProperty(name)){
-                        //STATIC (Option B)
-                        return JSON.parse(elem.dataset[name]);
-                    }else if(storageId === 2 && sessionStorage.getItem(name)){
-                        //SESSION (Option C), elem is ignored
-                        return JSON.parse(sessionStorage.getItem(name));
+                    if(core.be.checkCacheTs(name, 'data')){
+                        if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
+                            //DOM (Option A)
+                            return elem._CORE_Data[name];
+                        }else if(storageId === 1 && elem.dataset.hasOwnProperty(name)){
+                            //STATIC (Option B)
+                            return JSON.parse(elem.dataset[name]);
+                        }else if(storageId === 2 && sessionStorage.getItem(name)){
+                            //SESSION (Option C), elem is ignored
+                            return JSON.parse(sessionStorage.getItem(name));
+                        }
+                    }else{
+                        //TODO need to figure out how to restart the cache if expired
+                        //core.cr.delData(name, elem, storageId);
+                        if(useDebugger) console.log("C.O.R.E cache '" + name + "' has expired");
                     }
                 },
                 delTemplate: (name) => {
@@ -334,7 +368,7 @@ const core = (() => {
                     try {
                         successful = document.execCommand('copy');
                     } catch (err) {
-                        console.error('Copy unsuccessful!');
+                        if(useDebugger) console.log('C.O.R.E copy unsuccessful');
                     }
                     document.body.removeChild(textarea);
                     return successful;
@@ -785,7 +819,7 @@ const core = (() => {
                         const dataSrc = clone.dataset.coreSource;
                         const records = core.cr.getData(dataRef);
                         //get data if not available
-                        if(records){
+                        if(core.be.checkCacheTs(dataRef, 'data') && records){
                             dataList = dataList.filter(item => item !== dataRef);
                             pass.push(true);
                         }else if(!dataList.includes(dataRef)){
@@ -1187,7 +1221,7 @@ const core = (() => {
                                 }
                             }
                         }
-                        delete pocket;
+                        //delete pocket;
                         return;
                     }
                     //determine the location
