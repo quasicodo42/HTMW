@@ -500,8 +500,8 @@ const core = (() => {
                 },
                 /**
                  * Hydrates HTML tag content by using the class attribute as directive
-                 * Basic Syntax: <span class="h-user-name"></span> Result -> <span class>John</span>
-                 * Default Examples: h-userId, h-user.name, h-user.billing.address1; element will be hydrated (appended) and the class removed
+                 * Basic Syntax: <span class="h-user-name">Bobby</span> Result -> <span class>John</span>
+                 * Default Examples: h-userId, h-user-name, h-user-billing.address1, element will be hydrated (appended) and the class removed
                  * Options: h--countdown; element will be newly hydrated each call to the function
                  *
                  * @returns {void}
@@ -511,26 +511,28 @@ const core = (() => {
                     for (const element of elements){
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
                         for (const hClass of hClasses){
-                            const [ref, cache, member] = hClass.split('--').join('-').split('-');
-                            const data     = (core.cr.getData(cache) || {[member]:''});
+                            const [ref, cache, memberRef] = hClass.split('--').join('-').split('-');
+                            const data     = (core.cr.getData(cache) || {[memberRef]: cache + '*'});
                             const tag      = element.tagName;
-                            const value    = core.hf.digData(data,member) || '';
+                            const value    = core.hf.digData(data, memberRef);
                             const delClass = !hClass.includes('h--');
-                            switch(tag) {
-                                case 'INPUT':
-                                case 'SELECT':
-                                case 'TEXTAREA':
-                                    element.value = value;
-                                    break;
-                                default:
-                                    if(delClass){
-                                        element.innerHTML+= value;
-                                    }else{
-                                        element.innerHTML = value;
-                                    }
-                            }
-                            if(delClass){
-                                element.classList.remove(hClass);
+                            if(value){
+                                switch(tag) {
+                                    case 'INPUT':
+                                    case 'SELECT':
+                                    case 'TEXTAREA':
+                                        element.value = String(value);
+                                        break;
+                                    default:
+                                        if(delClass){
+                                            element.innerHTML+= String(value);
+                                        }else{
+                                            element.innerHTML = String(value);
+                                        }
+                                }
+                                if(delClass){
+                                    element.classList.remove(hClass);
+                                }
                             }
                         }
                     }
