@@ -41,6 +41,7 @@ const core = (() => {
             let cacheCreateTs      = {data:{},template:{}};
             let cacheExpire        = {data:{},template:{}}; //user setting
             let cacheExpireDefault = 86400; //user setting, in seconds
+            let fetchLogFIFO       = {data:{},template:{}};
             return {
                 get cacheCreateTs() {
                     return cacheCreateTs;
@@ -57,6 +58,9 @@ const core = (() => {
                 },
                 set cacheExpireDefault(value) {
                     cacheExpireDefault = (+value || 0);
+                },
+                get fetchLogFIFO() {
+                    return fetchLogFIFO;
                 },
                 setCacheTs: (dataRef, type) => {
                     cacheCreateTs[type][dataRef] = core.hf.date(null,'ts');
@@ -98,6 +102,10 @@ const core = (() => {
                             fetchParams.body = JSON.stringify(settings.data);
                         }
                     }
+
+                    //log and return
+                    settings.fetchParams = fetchParams;
+                    fetchLogFIFO[settings.type][settings.dataRef] = settings;
                     return fetchParams;
                 },
                 getData: (dataRef, dataSrc, settings) => {
