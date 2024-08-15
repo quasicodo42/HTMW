@@ -130,18 +130,22 @@
 <script src="/js/C.O.R.E.js"></script>
 <script>
     //C.O.R.E setup
-    core.useRouting  = false;
-    core.useDebugger = core.hf.getRoute().includes('localhost');
-
+    core.ud.init = () => {
+        //set config
+        core.useRouting  = false;
+        core.useDebugger = core.hf.getRoute().includes('localhost');
+        //set custom cache life
+        core.be.cacheExpire = {type:'data',name:'quote',seconds:5}
+    }
     //--CUSTOM FUNCTIONS--//
 
     //callback pre/post UX insertions
-    core.cb_preflight = (dataRef, dataObj, type) => {}
+    core.ud.prepaint = (dataRef, dataObj, type) => {}
 
-    core.cb_postflight = (dataRef, dataObj, type) => {}
+    core.ud.postpaint = (dataRef, dataObj, type) => {}
 
     //backend pre/post retrieval
-    core.be_preflight = (dataRef, dataSrc, type) => {
+    core.ud.preflight = (dataRef, dataSrc, type) => {
         let settings = {dataRef:dataRef, dataSrc:dataSrc, type:type};
         if(type.includes('temp')){
             if(dataRef === dataSrc){
@@ -156,7 +160,7 @@
         return settings;
     }
 
-    core.be_postflight = (dataRef, dataObj, type) => {
+    core.ud.postflight = (dataRef, dataObj, type) => {
         if(type === 'data'){
             switch(dataRef){
                 case 'prods':
@@ -187,10 +191,10 @@
     }
 
     //Start Of Call
-    core.pk_soc = () => {}
+    core.ud.soc = () => {}
 
     //End Of Call
-    core.pk_eoc = () => {}
+    core.ud.eoc = () => {}
 
     //--END CUSTOM FUNCTIONS--//
 

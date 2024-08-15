@@ -35,13 +35,16 @@ const core = (() => {
             core.hf.addClickListeners();
             core.pk.init();
             if(useDebugger) console.log('C.O.R.E loaded at ' + core.hf.date());
+            if(typeof core.ud.init === 'function'){
+               core.ud.init();
+            }
         },
         //backend functions
         be: (() => {
             let cacheCreateTs      = {data:{},template:{}};
             let cacheExpire        = {data:{},template:{}}; //user setting
             let cacheExpireDefault = 86400; //user setting, in seconds
-            let fetchLogFIFO       = {data:{},template:{}};
+            let fetchLogFIFO       = {};
             return {
                 get cacheCreateTs() {
                     return cacheCreateTs;
@@ -70,6 +73,9 @@ const core = (() => {
                     return (cacheCreateTs[type][dataRef] || core.hf.date(null,'ts')) + cacheLife > core.hf.date(null,'ts');
                 },
                 setGetParams: (settings) => {
+                    //log settings
+                    fetchLogFIFO[settings.dataRef] = settings;
+
                     let fetchParams = {
                         method: (settings.method || 'GET'),        // *GET, POST, PUT, PATCH, DELETE, etc.
                         //mode: "no-cors",                         // *cors, no-cors, same-origin
@@ -103,9 +109,6 @@ const core = (() => {
                         }
                     }
 
-                    //log and return
-                    settings.fetchParams = fetchParams;
-                    fetchLogFIFO[settings.type][settings.dataRef] = settings;
                     return fetchParams;
                 },
                 getData: (dataRef, dataSrc, settings) => {
@@ -153,14 +156,14 @@ const core = (() => {
                         data: null,
                         isFormData: false,
                     }
-                    if(typeof core.be_preflight === "function"){
-                        return {...defaultSettings, ...core.be_preflight(dataRef, dataSrc, type)};
+                    if(typeof core.ud.preflight === "function"){
+                        return {...defaultSettings, ...core.ud.preflight(dataRef, dataSrc, type)};
                     }
                     return defaultSettings;
                 },
                 postflight: (dataRef, dataObj, type) => {
-                    if(typeof core.be_postflight === "function"){
-                        return core.be_postflight(dataRef, dataObj, type);
+                    if(typeof core.ud.postflight === "function"){
+                        return core.ud.postflight(dataRef, dataObj, type);
                     }
                     return dataObj;
                 },
@@ -169,14 +172,14 @@ const core = (() => {
         //callback functions
         cb: (() => {
             return {
-                preflight: (dataRef, dataObj, type) => {
-                    if(typeof core.cb_preflight === "function"){
-                        core.cb_preflight(dataRef, dataObj, type);
+                prepaint: (dataRef, dataObj, type) => {
+                    if(typeof core.ud.prepaint === "function"){
+                        core.ud.prepaint(dataRef, dataObj, type);
                     }
                 },
-                postflight: (dataRef, dataObj, type) => {
-                    if(typeof core.cb_postflight === "function"){
-                        core.cb_postflight(dataRef, dataObj, type);
+                postpaint: (dataRef, dataObj, type) => {
+                    if(typeof core.ud.postpaint === "function"){
+                        core.ud.postpaint(dataRef, dataObj, type);
                     }
                 },
             }
@@ -243,21 +246,37 @@ const core = (() => {
                     elem = (elem || section);
                     storageId = storageId || storageIdDefault;
 
-                    if(core.be.checkCacheTs(name, 'data')){
-                        if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
-                            //DOM (Option A)
-                            return elem._CORE_Data[name];
-                        }else if(storageId === 1 && elem.dataset.hasOwnProperty(name)){
-                            //STATIC (Option B)
-                            return JSON.parse(elem.dataset[name]);
-                        }else if(storageId === 2 && sessionStorage.getItem(name)){
-                            //SESSION (Option C), elem is ignored
-                            return JSON.parse(sessionStorage.getItem(name));
-                        }
-                    }else{
-                        //TODO need to figure out how to restart the cache if expired
-                        //core.cr.delData(name, elem, storageId);
+                    //check for expired cache
+                    if(!core.be.checkCacheTs(name, 'data')){
                         if(useDebugger) console.log("C.O.R.E cache '" + name + "' has expired");
+                        if(core.be.fetchLogFIFO.hasOwnProperty(name)){
+                            //if pk is not already processsing trigger refresh
+                            if(!(core_be_count + core_cr_count + core_pk_count)){
+                                setTimeout(()=> {
+                                    core.pk.soc();
+                                })
+                            }
+                            let settings = core.be.fetchLogFIFO[name];
+                            if(core.be.fetchLogFIFO[name].type === 'data'){
+                                core.be.getData(settings.dataRef, settings.dataSrc, settings);
+                                if(useDebugger) console.log("C.O.R.E data '" + name + "' requested");
+                            }else{
+                                core.be.getTemplate(settings.dataRef, settings.dataSrc, settings);
+                                if(useDebugger) console.log("C.O.R.E template '" + name + "' requested");
+                            }
+                        }
+                    }
+
+                    //return data, (even if expired, refresh will occure immediately after)
+                    if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
+                        //DOM (Option A)
+                        return elem._CORE_Data[name];
+                    }else if(storageId === 1 && elem.dataset.hasOwnProperty(name)){
+                        //STATIC (Option B)
+                        return JSON.parse(elem.dataset[name]);
+                    }else if(storageId === 2 && sessionStorage.getItem(name)){
+                        //SESSION (Option C), elem is ignored
+                        return JSON.parse(sessionStorage.getItem(name));
                     }
                 },
                 delTemplate: (name) => {
@@ -663,7 +682,7 @@ const core = (() => {
                 /**
                  * End of Call
                  * The final running function of the DOM manipulation, cleanup
-                 * Will call user-defined function: core.pk_eoc, if available
+                 * Will call user-defined function: core.ud.eoc, if available
                  *
                  * @returns {void}
                  */
@@ -700,14 +719,14 @@ const core = (() => {
                     //reset functional variables
                     stackTs   = 0;
                     directive = [];
-                    if(typeof core.pk_eoc === "function"){
-                        core.pk_eoc();
+                    if(typeof core.ud.eoc === "function"){
+                        core.ud.eoc();
                     }
                 },
                 /**
                  * Start of Call
                  * The initial function of the DOM manipulation
-                 * Will call user-defined function: core.pk_soc, if available
+                 * Will call user-defined function: core.ud.soc, if available
                  *
                  * @returns {void}
                  */
@@ -726,8 +745,8 @@ const core = (() => {
                     }
 
                     //call user-defined start of function if declared
-                    if(typeof core.pk_soc === "function"){
-                        core.pk_soc();
+                    if(typeof core.ud.soc === "function"){
+                        core.ud.soc();
                     }
                     core.pk.getTemplate();
                 },
@@ -802,9 +821,9 @@ const core = (() => {
                         for (const template of templates){
                             if(!template) continue;
                             //fill the pockets w/items
-                            core.cb.preflight(template, null, 'template');
+                            core.cb.prepaint(template, null, 'template');
                             pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(template));
-                            core.cb.postflight(template, null, 'template');
+                            core.cb.postpaint(template, null, 'template');
                         }
                         if(!pocket.getElementsByClassName('core-clone').length){
                             pocket.style.display = '';
@@ -869,9 +888,9 @@ const core = (() => {
                         pattern.id = pattern.id || 'core-' + (Math.random() + 1).toString(36).substring(7);
                         pattern.classList.remove("core-clone");
                         pattern.classList.add("core-cloned");
-                        core.cb.preflight(dataRef, records, 'data');
+                        core.cb.prepaint(dataRef, records, 'data');
                         clone.insertAdjacentHTML('beforebegin', core.pk.cloner(records, pattern.outerHTML));
-                        core.cb.postflight(dataRef, records, 'data');
+                        core.cb.postpaint(dataRef, records, 'data');
                     }
                     //remove the clone templates
                     while(clones[0]) {
@@ -1166,6 +1185,19 @@ const core = (() => {
                 },
             }
         })(),
+        /**
+         * user-defined functions
+         * core.ud.init() called at init of load
+         * core.ud.soc() called at start of process
+         * core.ud.preflight() called prior to all backend requests
+         * core.ud.postflight() called post all backend requests
+         * core.ud.prepaint() called prior to each template insert
+         * core.ud.postpaint() called post each template insert (and cloning)
+         * core.ud.eoc() called at end of process
+         *
+         * core.ud.formatValue() called after core.ux.formatValue()
+        * */
+        ud: (() => {return{}})(),
         //user experience
         ux: (() => {
             return {
@@ -1189,8 +1221,8 @@ const core = (() => {
                             value = core.pk.cloner(value, core.cr.getTemplate(clueFinal) || 'not found');
                         }else{
                             value = core.sv.format(value, [formatName,'unavailable',clueFinal].join('.'),clueFinal)
-                            if(typeof core.ux_modTemp === 'function'){
-                                value = core.ux_modTemp(value, formatList, clue);
+                            if(typeof core.ud.formatValue === 'function'){
+                                value = core.ud.formatValue(value, formatList, clue);
                             }
                         }
                     }
