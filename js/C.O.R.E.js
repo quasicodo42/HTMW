@@ -201,10 +201,10 @@ const core = (() => {
                     }
                     //setup keyword templates
                     if(!preloaded.includes('EMPTY')){
-                        core.cr.setTemplate('EMPTY', '');
+                        core.cr.setTemplate('EMPTY', core.ud.defaultEmptyTemplate);
                     }
                     if(!preloaded.includes('LOADING')){
-                        core.cr.setTemplate('LOADING', '<marquee width="50%">loading...</marquee>');
+                        core.cr.setTemplate('LOADING', core.ud.defaultLoadingTemplate);
                     }
                 },
                 delData: (name, elem, storageId) => {
@@ -413,7 +413,7 @@ const core = (() => {
 
                     //checks for valid date object
                     if(!Date.parse(date)){
-                        return dateStr + '*';
+                        return dateStr + core.ud.alertInvalidDate;
                     }
 
                     switch (output){
@@ -572,6 +572,7 @@ const core = (() => {
                     for (const element of elements){
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
                         for (const hClass of hClasses){
+                            if(core.ud.hydrationClassIgnoreList.includes(hClass)) continue;
                             const [ref, cache, memberRef] = hClass.split('--').join('-').split('-');
                             const data     = (core.cr.getData(cache) || {[memberRef]: cache + '*'});
                             const tag      = element.tagName;
@@ -619,6 +620,7 @@ const core = (() => {
 
                         //begin formatting
                         for (const fClass of fClasses){
+                            if(core.ud.formatClassIgnoreList.includes(fClass)) continue;
                             const delClass = !fClass.includes('f--');
                             //take care of nulls/empties
                             if(value === 'null' || value === 'undefined' || !value.length){
@@ -1209,10 +1211,15 @@ const core = (() => {
             let defaultDeltaFormat      = 'none';
             let defaultClickTarget      = 'main';
             let defaultDateFormat       = 'M/D/YY H:MM P';
+            let defaultLoadingTemplate  = '<marquee width="50%">loading...</marquee>';
+            let defaultEmptyTemplate    = '';
             let defaultPageTitle        = 'C.O.R.E';
             let defaultPageStatusUpdate = 'Updated bookmark location';
             let alertMissingTemplate    = 'Not Found';
             let alertEmptyTemplate      = 'Not Found';
+            let alertInvalidDate        = '*';
+            let hydrationClassIgnoreList= ['h-100'];
+            let formatClassIgnoreList   = [];
             return{
                 get defaultDelta() {
                     return defaultDelta;
@@ -1238,6 +1245,18 @@ const core = (() => {
                 set defaultDateFormat(value) {
                     defaultDateFormat = String(value);
                 },
+                get defaultLoadingTemplate() {
+                    return defaultLoadingTemplate;
+                },
+                set defaultLoadingTemplate(value) {
+                    defaultLoadingTemplate = String(value);
+                },
+                get defaultEmptyTemplate() {
+                    return defaultEmptyTemplate;
+                },
+                set defaultEmptyTemplate(value) {
+                    defaultEmptyTemplate = String(value);
+                },
                 get defaultPageTitle() {
                     return defaultPageTitle;
                 },
@@ -1261,6 +1280,24 @@ const core = (() => {
                 },
                 set alertEmptyTemplate(value) {
                     alertEmptyTemplate = String(value);
+                },
+                get alertInvalidDate() {
+                    return alertInvalidDate;
+                },
+                set alertInvalidDate(value) {
+                    alertInvalidDate = String(value);
+                },
+                get hydrationClassIgnoreList() {
+                    return hydrationClassIgnoreList;
+                },
+                set hydrationClassIgnoreList(value) {
+                    hydrationClassIgnoreList.push(value);
+                },
+                get formatClassIgnoreList() {
+                    return formatClassIgnoreList;
+                },
+                set formatClassIgnoreList(value) {
+                    formatClassIgnoreList.push(value);
                 },
             }
         })(),
