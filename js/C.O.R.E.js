@@ -1,4 +1,4 @@
-//C.O.R.E ver:20240812.0;
+//C.O.R.E ver:20240815.0;
 let core_be_count = 0;
 let core_cr_count = 0;
 let core_pk_count = 0;
