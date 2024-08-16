@@ -134,9 +134,9 @@ const core = (() => {
                     fetch(settings.dataSrc, core.be.setGetParams(settings))
                         .then((response) => {
                             core_be_count--;
-                            return (response.ok ? response.text() : '{"error":true,"settings":' + JSON.stringify(settings) + '}');
+                            return (response.ok ? response.text() : core.ud.alertMissingTemplate);
                         }).then((dataString) => {
-                        dataString = (core.be.postflight(settings.dataRef, (dataString || 'Not Found'), 'template') || dataString);
+                        dataString = (core.be.postflight(settings.dataRef, (dataString || core.ud.alertMissingTemplate), 'template') || dataString);
                         core.cr.setTemplate(settings.dataRef, dataString);
                     }).catch((error) => {
                         core_be_count--;
@@ -313,7 +313,7 @@ const core = (() => {
                 },
                 addClickListener: (element) => {
                     const dataRefs = element.dataset.coreTemplates;
-                    const target  = (element.getAttribute('target') || 'main');
+                    const target  = (element.getAttribute('target') || core.ud.defaultClickTarget);
                     if(!dataRefs) return;
                     //check for data sources
                     let dataSources = [];
@@ -402,7 +402,7 @@ const core = (() => {
                 },
                 date: (dateStr, format) => {
                     let date   = (dateStr || new Date().toLocaleString());
-                    let output = (format || 'm/d/yy h:mm p').toUpperCase();
+                    let output = (format || core.ud.defaultDateFormat).toUpperCase();
 
                     // Check Unix timestamp (numeric)
                     if (+date) {
@@ -490,8 +490,8 @@ const core = (() => {
                 },
                 setRoute: (base, title, append, info) => {
                     base  = base || core.hf.getRoute();
-                    title = title || 'C.O.R.E';
-                    const state  = { additionalInformation: (info || 'Updated bookmark location') };
+                    title = title || core.ud.defaultPageTitle;
+                    const state  = { additionalInformation: (info || core.ud.defaultPageStatusUpdate) };
                     if(append){
                         base+= append;
                     }
@@ -614,14 +614,14 @@ const core = (() => {
                         const fClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('f-')});
                         let value      = element.innerHTML;
                         //check for possible arguments
-                        let fDefault = (element.dataset.fDefault || '');
+                        let fDefault = (element.dataset.fDefault || core.ud.defaultDelta);
                         let fClue    = (element.dataset.fClue || null);
 
                         //begin formatting
                         for (const fClass of fClasses){
                             const delClass = !fClass.includes('f--');
                             //take care of nulls/empties
-                            if(value === 'null' || !value.length){
+                            if(value === 'null' || value === 'undefined' || !value.length){
                                 value = fDefault;
                             }
 
@@ -914,7 +914,7 @@ const core = (() => {
                         let placeholders = newString.match(core.sv.regex.dblcurly) || [];
                         for (const placeholder of placeholders){
                             let [type, member, format, clue] = placeholder.split(':');
-                            let value = record.hasOwnProperty(member) ? record[member] : null;
+                            let value = (record.hasOwnProperty(member) ? (record[member] || core.ud.defaultDelta) : null);
                             switch(type){
                                 case 'aug': case '!':
                                     if(['i','index'].includes(member)) value = count;
@@ -922,8 +922,8 @@ const core = (() => {
                                     break;
                                 case 'rec': case '#':
                                 default:
-                                    //try digging for the value
-                                    if(!value) value = core.hf.digData(record, member);
+                                    //try digging for the value i.e., company.address.shipping.street
+                                    if(value === null) value = (core.hf.digData(record, member) || core.ud.defaultDelta);
                                     break;
                             }
                             value = core.ux.formatValue(value, format, clue);
@@ -954,7 +954,7 @@ const core = (() => {
                     return regex;
                 },
                 format: function (value, formatStr, valueDefault) {
-                    let [format, vDefault, clue] = String(formatStr || 'default').split('.');
+                    let [format, vDefault, clue] = String(formatStr || [core.ud.defaultDeltaFormat, core.ud.defaultDelta].join('.')).split('.');
                     let [clueCount, cluePad]     = String(clue || '4|0').split('|');
                     switch(format.toLowerCase()){
                         case 'alphaonly':
@@ -982,6 +982,13 @@ const core = (() => {
                         case 'email':
                         case 'lower':
                             value = value.toLowerCase();
+                            break;
+                        case 'emaillink':
+                            value = value.toLowerCase();
+                            value = '<a href="mailto:' + value + '">' + value + '</a>';
+                            break;
+                        case 'weblink':
+                            value = '<a href="' + value + '" target="_blank">' + value + '</a>';
                             break;
                         case 'money':
                             if(clue === 'USD'){
@@ -1028,8 +1035,8 @@ const core = (() => {
                         case 'core_pk_attr':
                             value = ' ' + clue + '="' + value + '" ';
                             break
-                        case 'core_pk_cloner': //TODO not working in recursion
-                            value = core.pk.cloner(value, core.cr.getTemplate(clue) || 'not found');
+                        case 'core_pk_cloner':
+                            value = core.pk.cloner(value, core.cr.getTemplate(clue) || core.ud.alertMissingTemplate);
                             break;
                         case 'removehtml':
                             let tempElem = document.createElement('DIV');
@@ -1052,7 +1059,7 @@ const core = (() => {
                             value = value.charAt(0).toUpperCase() + value.slice(1);
                             break;
                     }
-                    return value || (vDefault ? core.sv.format(vDefault,format) : value);
+                    return value || (vDefault !== core.ud.defaultDelta ? core.sv.format(vDefault,format) : value);
                 },
                 scrub: function (scrubArr) {
                     //[{name:"name",value:"John",scrubs:["req","lower"]}]
@@ -1197,7 +1204,66 @@ const core = (() => {
          *
          * core.ud.formatValue() called after core.ux.formatValue()
         * */
-        ud: (() => {return{}})(),
+        ud: (() => {
+            let defaultDelta            = '';
+            let defaultDeltaFormat      = 'none';
+            let defaultClickTarget      = 'main';
+            let defaultDateFormat       = 'M/D/YY H:MM P';
+            let defaultPageTitle        = 'C.O.R.E';
+            let defaultPageStatusUpdate = 'Updated bookmark location';
+            let alertMissingTemplate    = 'Not Found';
+            let alertEmptyTemplate      = 'Not Found';
+            return{
+                get defaultDelta() {
+                    return defaultDelta;
+                },
+                set defaultDelta(value) {
+                    defaultDelta = String(value);
+                },
+                get defaultDeltaFormat() {
+                    return defaultDeltaFormat;
+                },
+                set defaultDeltaFormat(value) {
+                    defaultDeltaFormat = String(value);
+                },
+                get defaultClickTarget() {
+                    return defaultClickTarget;
+                },
+                set defaultDeltaFormat(value) {
+                    defaultClickTarget = String(value);
+                },
+                get defaultDateFormat() {
+                    return defaultDateFormat;
+                },
+                set defaultDateFormat(value) {
+                    defaultDateFormat = String(value);
+                },
+                get defaultPageTitle() {
+                    return defaultPageTitle;
+                },
+                set defaultPageTitle(value) {
+                    defaultPageTitle = String(value);
+                },
+                get defaultPageStatusUpdate() {
+                    return defaultPageStatusUpdate;
+                },
+                set defaultPageStatusUpdate(value) {
+                    defaultPageStatusUpdate = String(value);
+                },
+                get alertMissingTemplate() {
+                    return alertMissingTemplate;
+                },
+                set alertMissingTemplate(value) {
+                    alertMissingTemplate = String(value);
+                },
+                get alertEmptyTemplate() {
+                    return alertEmptyTemplate;
+                },
+                set alertEmptyTemplate(value) {
+                    alertEmptyTemplate = String(value);
+                },
+            }
+        })(),
         //user experience
         ux: (() => {
             return {
@@ -1217,13 +1283,10 @@ const core = (() => {
                         //checking for format*clue format
                         let [formatName, clueOverride] = formatItem.split('*');
                         let clueFinal = (clueOverride || clue);
-                        if(formatName === 'core_pk_cloner'){
-                            value = core.pk.cloner(value, core.cr.getTemplate(clueFinal) || 'not found');
-                        }else{
-                            value = core.sv.format(value, [formatName,'unavailable',clueFinal].join('.'),clueFinal)
-                            if(typeof core.ud.formatValue === 'function'){
-                                value = core.ud.formatValue(value, formatList, clue);
-                            }
+                        //set the value
+                        value = core.sv.format(value, [formatName, core.ud.defaultDelta, clueFinal].join('.'),clueFinal)
+                        if(typeof core.ud.formatValue === 'function'){
+                            value = core.ud.formatValue(value, formatList, clue);
                         }
                     }
                     return value;
