@@ -574,7 +574,7 @@ const core = (() => {
                         for (const hClass of hClasses){
                             if(core.ud.hydrationClassIgnoreList.includes(hClass)) continue;
                             const [ref, cache, memberRef] = hClass.split('--').join('-').split('-');
-                            const data     = (core.cr.getData(cache) || {[memberRef]: cache + '*'});
+                            const data     = (core.cr.getData(cache) || {[(memberRef || 'not')]: (cache || 'found') + '*'});
                             const tag      = element.tagName;
                             const value    = (typeof data === 'string' ? data : core.hf.digData(data, memberRef));
                             const delClass = !hClass.includes('h--');
