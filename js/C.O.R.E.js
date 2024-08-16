@@ -898,12 +898,14 @@ const core = (() => {
                     for (const clone of clones){
                         const dataRef = clone.dataset.coreData;
                         const records = core.cr.getData(dataRef) || [];
-                        const pattern = clone.cloneNode(true);
-                        pattern.id = pattern.id || 'core-' + (Math.random() + 1).toString(36).substring(7);
-                        pattern.classList.remove("core-clone");
-                        pattern.classList.add("core-cloned");
+                        const cloned = clone.cloneNode(true);
+                        cloned.classList.remove("core-clone");
+                        cloned.classList.add("core-cloned-" + dataRef.split('-').map(s => core.sv.scrubSimple('temp',s,['alphaonly']).value).join('-'));
+                        cloned.removeAttribute('data-core-source');
+                        cloned.removeAttribute('data-core-data');
+                        cloned.removeAttribute('id'); //shant have an id
                         core.cb.prepaint(dataRef, records, 'data');
-                        clone.insertAdjacentHTML('beforebegin', core.pk.cloner(records, pattern.outerHTML));
+                        clone.insertAdjacentHTML('beforebegin', core.pk.cloner(records, cloned.outerHTML));
                         core.cb.postpaint(dataRef, records, 'data');
                     }
                     //remove the clone templates
