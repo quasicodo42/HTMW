@@ -567,7 +567,7 @@ const core = (() => {
                  *
                  * @returns {void}
                  */
-                hydrateByClass: () => {
+                hydrateByClass: () => { //TODO set up for a filter of a single class
                     const elements = document.querySelectorAll('[class^="h-"],[class*=" h-"]');
                     for (const element of elements){
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
@@ -928,7 +928,7 @@ const core = (() => {
                                     if(value === null) value = (core.hf.digData(record, member) || core.ud.defaultDelta);
                                     break;
                             }
-                            value = core.ux.formatValue(value, format, clue);
+                            if(value != core.ud.defaultDelta) value = core.ux.formatValue(value, format, clue);
                             newString = newString.replaceAll('{{' + placeholder + '}}', value);
                         }
                         count++;
