@@ -312,7 +312,7 @@ const core = (() => {
                     }
                 },
                 addClickListener: (element) => {
-                    const dataRefs = element.dataset.coreTemplates;
+                    const dataRefs = element.dataset.coreTemplates || element.dataset.coreData; //accepts template THEN/OR data
                     const target  = (element.getAttribute('target') || core.ud.defaultClickTarget);
                     if(!dataRefs) return;
                     //check for data sources
@@ -320,7 +320,7 @@ const core = (() => {
                     //pocket.dataset[template + 'CoreSource']
                     const templates = dataRefs.split(',').map(s => String(s).trim()).filter(Boolean);
                     for(const template of templates){
-                        const source = element.dataset[template + 'CoreSource'];
+                        const source = element.dataset[template + 'CoreSource'] || element.dataset.coreSource; //accepts template THEN/OR data
                         if(source){
                             dataSources.push({name:template, url:source});
                         }
@@ -576,7 +576,7 @@ const core = (() => {
                             const [ref, cache, memberRef] = hClass.split('--').join('-').split('-');
                             const data     = (core.cr.getData(cache) || {[memberRef]: cache + '*'});
                             const tag      = element.tagName;
-                            const value    = core.hf.digData(data, memberRef);
+                            const value    = (typeof data === 'string' ? data : core.hf.digData(data, memberRef));
                             const delClass = !hClass.includes('h--');
                             if(value){
                                 switch(tag) {
@@ -1330,7 +1330,7 @@ const core = (() => {
                 },
                 insertPocket: (target, dataRefs, dataSources = [], autoFill = true) => {
                     if(!dataRefs) return;
-                    let isSilent = target.includes('core_be_get');
+                    let isSilent = target.includes('core_be_get'); //core_be_getData, core_be_getTemplate
                     let isData   = target.includes('Data');
                     //set up the pocket
                     const pocket = document.createElement('div');
