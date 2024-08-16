@@ -564,11 +564,17 @@ const core = (() => {
                  * Basic Syntax: <span class="h-user-name">Bobby</span> Result -> <span class>John</span>
                  * Default Examples: h-userId, h-user-name, h-user-billing.address1, element will be hydrated (appended) and the class removed
                  * Options: h--countdown; element will be newly hydrated each call to the function
+                 * @param {string} classFilter - A string filter used to identify the filtered elements to hydrate.
                  *
                  * @returns {void}
                  */
-                hydrateByClass: () => { //TODO set up for a filter of a single class
-                    const elements = document.querySelectorAll('[class^="h-"],[class*=" h-"]');
+                hydrateByClass: (classFilter) => {
+                    let elements;
+                    if(classFilter){
+                        elements = document.querySelectorAll('[class*="' + String(classFilter) + '"]');
+                    }else{
+                        elements = document.querySelectorAll('[class^="h-"],[class*=" h-"]');
+                    }
                     for (const element of elements){
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
                         for (const hClass of hClasses){
@@ -606,11 +612,17 @@ const core = (() => {
                  * Default Examples: f-money, f-upper, f-date-time, this will be formatted once and the class removed
                  * Options: f--money, this will continue to be formatted each call to the function
                  * Advanced Syntax: <div class="f-money" data-f-default="0" data-f-clue="USD">
+                 * @param {string} classFilter - A string filter used to identify the filtered elements to format.
                  *
                  * @returns {void}
                  */
-                formatByClass: () => {
-                    const elements = document.querySelectorAll('[class^="f-"],[class*=" f-"]');
+                formatByClass: (classFilter) => {
+                    let elements;
+                    if(classFilter){
+                        elements = document.querySelectorAll('[class*="' + String(classFilter) + '"]');
+                    }else{
+                        elements = document.querySelectorAll('[class^="f-"],[class*=" f-"]');
+                    }
                     for (const element of elements){
                         const fClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('f-')});
                         let value      = element.innerHTML;
