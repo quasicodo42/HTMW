@@ -7,6 +7,7 @@ const core = (() => {
     const section   = document.getElementById('cr-data') || template.cloneNode(true);
     let useDebugger = false; //user setting
     let useRouting  = false; //user setting
+    let useLocking  = true;  //true = pockets lock after complete, false = pockets will refresh every soc call
     if(document.readyState === 'complete') {
         setTimeout(()=>{core.init()});
     } else {
@@ -34,10 +35,12 @@ const core = (() => {
             if(useDebugger) console.log('C.O.R.E loaded at ' + core.hf.date());
             core.cr.init();
             core.hf.addClickListeners();
-            if(typeof core.ud.init === 'function'){
-                core.ud.init();
-            }
-            core.pk.init();
+            setTimeout(()=>{
+                if(typeof core.ud.init === 'function'){
+                    core.ud.init();
+                }
+                core.pk.init();
+            })
         },
         //backend functions
         be: (() => {
@@ -726,6 +729,11 @@ const core = (() => {
                             lists.push(list);
                         }
                         directive.push({t:target,l:lists})
+                        if(useLocking) {
+                            pocket.classList.remove('core-pocket');
+                            pocket.classList.add('core-pocketed');
+                        }
+
                     }
                     //update the URL
                     if(useRouting) core.hf.setRoute(core.hf.getRoute('origin') + core.hf.getRoute('pathname') + core.hf.getRoute('search'), null, '#' + escape(JSON.stringify(directive)))
