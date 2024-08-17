@@ -31,13 +31,13 @@ const core = (() => {
             useRouting = Boolean(+value);
         },
         init: () => {
+            if(useDebugger) console.log('C.O.R.E loaded at ' + core.hf.date());
             core.cr.init();
             core.hf.addClickListeners();
-            core.pk.init();
-            if(useDebugger) console.log('C.O.R.E loaded at ' + core.hf.date());
             if(typeof core.ud.init === 'function'){
-               core.ud.init();
+                core.ud.init();
             }
+            core.pk.init();
         },
         //backend functions
         be: (() => {
