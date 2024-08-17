@@ -1012,6 +1012,10 @@ const core = (() => {
                         case 'weblink':
                             value = '<a href="' + value + '" target="_blank">' + value + '</a>';
                             break;
+                        case 'imgsrc':
+                            //value: url of the image; clue: list of attributes to add to element
+                            value = '<img src="' + value + '" ' + clue + '>';
+                            break;
                         case 'money':
                             if(clue === 'USD'){
                                 clue = '$';
