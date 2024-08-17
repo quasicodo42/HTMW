@@ -14,7 +14,7 @@ core.ud.postpaint = (dataRef, dataObj, type) => {
     }else if(type === 'template'){
         //TODO
     }
-    if(core.useDebugger) console.log('cb_postflight',{dataRef, dataObj, type});
+    if(core.useDebugger) console.log('ud.postflight',{dataRef, dataObj, type});
 }
 //END C.O.R.E callback pre/post UX template insertions
 
@@ -26,7 +26,7 @@ core.ud.preflight = (dataRef, dataSrc, type) => {
     }else if(type === 'template'){
         //TODO
     }
-    if(core.useDebugger) console.log('be_preflight',{dataRef, dataSrc, type});
+    if(core.useDebugger) console.log('ud.preflight',{dataRef, dataSrc, type});
     return settings;
 }
 core.ud.postflight = (dataRef, dataObj, type) => {
@@ -35,7 +35,7 @@ core.ud.postflight = (dataRef, dataObj, type) => {
     }else if(type === 'template'){
         //TODO
     }
-    if(core.useDebugger) console.log('be_postflight',{dataRef, dataObj, type});
+    if(core.useDebugger) console.log('ud.postflight',{dataRef, dataObj, type});
     return dataObj;
 }
 //END C.O.R.E backend pre/post data/template request

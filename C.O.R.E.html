@@ -140,9 +140,13 @@
     //--CUSTOM FUNCTIONS--//
 
     //callback pre/post UX insertions
-    core.ud.prepaint = (dataRef, dataObj, type) => {}
+    core.ud.prepaint = (dataRef, dataObj, type) => {
+        if(core.useDebugger) console.log('ud.prepaint',{dataRef, dataObj, type});
+    }
 
-    core.ud.postpaint = (dataRef, dataObj, type) => {}
+    core.ud.postpaint = (dataRef, dataObj, type) => {
+        if(core.useDebugger) console.log('ud.postpaint',{dataRef, dataObj, type});
+    }
 
     //backend pre/post retrieval
     core.ud.preflight = (dataRef, dataSrc, type) => {
@@ -156,7 +160,7 @@
                 settings.fetchParams = {mode: "no-cors"};
             }
         }
-        if(core.useDebugger) console.log('be_preflight',{dataRef, dataSrc, type});
+        if(core.useDebugger) console.log('ud.preflight',{dataRef, dataSrc, type});
         return settings;
     }
 
@@ -186,7 +190,7 @@
         }else{
             //TODO
         }
-        if(core.useDebugger) console.log('cb_postflight',{dataRef, dataObj, type});
+        if(core.useDebugger) console.log('ud.postflight',{dataRef, dataObj, type});
         return dataObj;
     }
 

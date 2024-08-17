@@ -931,7 +931,7 @@ const core = (() => {
                     let newTemplateStr = '';
                     let count          = 0;
                     for (const record of records) {
-                        let newString = templateRef; //TODO should be able to use item reference name
+                        let newString = templateRef; //TODO should be able to use item reference name, someday
                         //replace the placeholders {{rec:name}}
                         let placeholders = newString.match(core.sv.regex.dblcurly) || [];
                         for (const placeholder of placeholders){
