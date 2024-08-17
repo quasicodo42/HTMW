@@ -209,7 +209,7 @@ const core = (() => {
                 },
                 delData: (name, elem, storageId) => {
                     elem      = (elem || section);
-                    storageId = storageId || storageIdDefault;
+                    storageId = ((storageId === null || storageId === undefined) ? storageIdDefault : +storageId);
 
                     if(storageId === 0 && elem._CORE_Data && elem._CORE_Data.hasOwnProperty(name)){
                         //DOM (Option A)
@@ -224,7 +224,7 @@ const core = (() => {
                 },
                 setData: (name, data, elem, storageId) => {
                     elem      = (elem || section);
-                    storageId = storageId || storageIdDefault;
+                    storageId = ((storageId === null || storageId === undefined) ? storageIdDefault : +storageId);
 
                     //delete previous data by name
                     core.cr.delData(name, elem);
@@ -244,7 +244,7 @@ const core = (() => {
                 },
                 getData: (name, elem, storageId) => {
                     elem = (elem || section);
-                    storageId = storageId || storageIdDefault;
+                    storageId = ((storageId === null || storageId === undefined) ? storageIdDefault : +storageId);
 
                     //check for expired cache
                     if(!core.be.checkCacheTs(name, 'data')){
@@ -899,13 +899,19 @@ const core = (() => {
                         const dataRef = clone.dataset.coreData;
                         const records = core.cr.getData(dataRef) || [];
                         const cloned = clone.cloneNode(true);
+                        const clonedClass = "core-cloned-" + dataRef.split('-').map(s => core.sv.scrubSimple('temp',s,['alphaonly']).value).join('-');
                         cloned.classList.remove("core-clone");
-                        cloned.classList.add("core-cloned-" + dataRef.split('-').map(s => core.sv.scrubSimple('temp',s,['alphaonly']).value).join('-'));
+                        cloned.classList.add(clonedClass);
                         cloned.removeAttribute('data-core-source');
                         cloned.removeAttribute('data-core-data');
                         cloned.removeAttribute('id'); //shant have an id
                         core.cb.prepaint(dataRef, records, 'data');
                         clone.insertAdjacentHTML('beforebegin', core.pk.cloner(records, cloned.outerHTML));
+                        //add the record data to the cloned element using storageId=0
+                        let recordIndex = 0;
+                        for(const newClone of clone.parentNode.getElementsByClassName(clonedClass)) {
+                            core.cr.setData('coreRecord', records[recordIndex++], newClone, 0);
+                        }
                         core.cb.postpaint(dataRef, records, 'data');
                     }
                     //remove the clone templates
