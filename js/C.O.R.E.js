@@ -836,6 +836,8 @@ const core = (() => {
                         while (pocket.firstElementChild) {
                             pocket.firstElementChild.remove();
                         }
+                        //hide the pocket, shown when filled
+                        pocket.style.display = 'none';
                         //get the items
                         const templates = (pocket.dataset.coreTemplates || '').split(',').map(s => String(s).trim()).filter(Boolean);
                         for (const template of templates){
@@ -844,6 +846,9 @@ const core = (() => {
                             core.cb.prepaint(template, null, 'template');
                             pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate(template));
                             core.cb.postpaint(template, null, 'template');
+                        }
+                        if(!pocket.getElementsByClassName('core-clone').length){
+                            pocket.style.display = '';
                         }
                     }
                     core.pk.getData();
@@ -919,6 +924,8 @@ const core = (() => {
                     }
                     //remove the clone templates
                     while(clones[0]) {
+                        //show the pocket, previously hidden
+                        (clones[0].closest('.core-pocket') || clones[0].closest('.core-pocketed')).style.display = '';
                         clones[0].remove();
                     }
                     let links = document.getElementsByTagName('a');
