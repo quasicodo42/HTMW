@@ -160,7 +160,7 @@ const core = (() => {
                         isFormData: false,
                     }
                     if(typeof core.ud.preflight === "function"){
-                        return {...defaultSettings, ...core.ud.preflight(defaultSettings.dataRef, defaultSettings.dataSrc, type)};
+                        return {...defaultSettings, ...core.ud.preflight(defaultSettings.dataRef, defaultSettings.dataSrc, defaultSettings.type)};
                     }
                     return defaultSettings;
                 },
