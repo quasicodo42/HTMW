@@ -149,8 +149,8 @@ const core = (() => {
                 preflight: (dataRef, dataSrc, type) => {
                     //settings: method, cache, redirect, headers, data, isFormData,...dataRef, dataSrc, type
                     let defaultSettings = {
-                        dataRef: dataRef,
-                        dataSrc: dataSrc,
+                        dataRef: dataRef, //TODO add a default here when undefined
+                        dataSrc: dataSrc || dataRef,
                         type: type,
                         method: 'GET',
                         cache: 'no-cache',
@@ -803,7 +803,7 @@ const core = (() => {
                                 pocket.insertAdjacentHTML('beforeend', core.cr.getTemplate('LOADING'));
                                 const dataSrc = pocket.dataset[template + 'CoreSource'];
                                 templateList.push(template);
-                                core.be.getTemplate(template, (dataSrc || template));
+                                core.be.getTemplate(template, dataSrc);
                             }
                         }
                     }
