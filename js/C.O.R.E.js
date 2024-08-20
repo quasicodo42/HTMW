@@ -1093,7 +1093,7 @@ const core = (() => {
                             value = value.charAt(0).toUpperCase() + value.slice(1);
                             break;
                     }
-                    return value || (vDefault !== core.ud.defaultDelta ? core.sv.format(vDefault,format) : value);
+                    return value || (vDefault && vDefault !== core.ud.defaultDelta ? core.sv.format(vDefault,format) : value);
                 },
                 scrub: function (scrubArr) {
                     //[{name:"name",value:"John",scrubs:["req","lower"]}]
