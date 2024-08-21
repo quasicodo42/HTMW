@@ -710,8 +710,8 @@ const core = (() => {
                         return;
                     }
 
-                    setTimeout(() => { //added in attempt to fix formatting bug 20240821
-                        core.hf.hydrateByClass();
+                    core.hf.hydrateByClass();
+                    setTimeout(() => { //setTimeout added in attempt to fix formatting bug 20240821
                         core.hf.formatByClass();
                         if(typeof core.ud.eoc === "function"){
                             core.ud.eoc();
@@ -948,20 +948,21 @@ const core = (() => {
                         let placeholders = newString.match(core.sv.regex.dblcurly) || [];
                         for (const placeholder of placeholders){
                             let [type, member, format, clue] = placeholder.split(':');
-                            let value = (record.hasOwnProperty(member) ? (record[member] || core.ud.defaultDelta) : null);
+                            let value;
                             switch(type){
                                 case 'aug': case '!':
                                     if(['i','index'].includes(member)) value = count;
                                     else if(['c','count'].includes(member)) value = count + 1;
                                     break;
                                 case 'rec': case '#':
-                                default:
-                                    //try digging for the value i.e., company.address.shipping.street
-                                    if(value === null) value = (core.hf.digData(record, member) || core.ud.defaultDelta);
+                                    value = core.hf.digData(record, member);
                                     break;
+                                default:
+                                    value = core.ud.alertMissingTypeReference;
                             }
-                            if(value != core.ud.defaultDelta) value = core.ux.formatValue(value, format, clue);
-                            newString = newString.replaceAll('{{' + placeholder + '}}', value);
+                            //format if a value is present
+                            if(value != undefined) value = core.ux.formatValue((value || core.ud.defaultDelta), format, clue);
+                            newString = newString.replaceAll('{{' + placeholder + '}}', (value || core.ud.defaultDelta));
                         }
                         count++;
                         newTemplateStr = newTemplateStr + ' ' + newString;
@@ -990,6 +991,7 @@ const core = (() => {
                 format: function (value, formatStr, valueDefault) {
                     let [format, vDefault, clue] = String(formatStr || [core.ud.defaultDeltaFormat, core.ud.defaultDelta].join('.')).split('.');
                     let [clueCount, cluePad]     = String(clue || '4|0').split('|');
+                    value = value || valueDefault || vDefault;
                     switch(format.toLowerCase()){
                         case 'alphaonly':
                             value = value.replace(regex.alpha, '');
@@ -1008,17 +1010,17 @@ const core = (() => {
                             value = (+value).toFixed(2) + (clue || '');
                             break
                         case 'encrypt':
-                            value = value.split('').sort().reverse().join('');
+                            value = String(value).split('').sort().reverse().join('');
                             break;
                         case 'float':
-                            value = value.replace(regex.floats, '');
+                            value = String(value).replace(regex.floats, '');
                             break;
                         case 'email':
                         case 'lower':
-                            value = value.toLowerCase();
+                            value = String(value).toLowerCase();
                             break;
                         case 'emaillink':
-                            value = value.toLowerCase();
+                            value = String(value).toLowerCase();
                             value = '<a href="mailto:' + value + '">' + value + '</a>';
                             break;
                         case 'weblink':
@@ -1035,7 +1037,7 @@ const core = (() => {
                             value = (clue === '$' ? clue : '') + (+value).toFixed(2);
                             break;
                         case 'nospace':
-                            value = value.split(' ').join('');
+                            value = String(value).split(' ').join('');
                             break;
                         case 'null':
                             value = null;
@@ -1048,7 +1050,7 @@ const core = (() => {
                             }
                             break;
                         case 'numonly':
-                            value = value.replace(regex.numbers, '');
+                            value = String(value).replace(regex.numbers, '');
                             break;
                         case 'object':
                             let result = {};
@@ -1078,7 +1080,7 @@ const core = (() => {
                             break;
                         case 'removehtml':
                             let tempElem = document.createElement('DIV');
-                            tempElem.innerHTML = value;
+                            tempElem.innerHTML = String(value);
                             value = tempElem.textContent || tempElem.innerText || '';
                             break;
                         case 'string':
@@ -1088,16 +1090,16 @@ const core = (() => {
                             value = String(value).split("").map(v=>v.charCodeAt(0)).reduce((a,v)=>a+((a<<7)+(a<<3))^v).toString(16);
                             break;
                         case 'truncate':
-                            value = value.length < +clue ? value : value.substring(0, +clue) + '...';
+                            value = String(value).length < +clue ? String(value) : String(value).substring(0, +clue) + '...';
                             break;
                         case 'upper':
-                            value = value.toUpperCase();
+                            value = String(value).toUpperCase();
                             break;
                         case 'upperfirst':
-                            value = value.charAt(0).toUpperCase() + value.slice(1);
+                            value = String(value).charAt(0).toUpperCase() + String(value).slice(1);
                             break;
                     }
-                    return value || (vDefault && vDefault !== core.ud.defaultDelta ? core.sv.format(vDefault,format) : value);
+                    return value || core.ud.defaultDelta;
                 },
                 scrub: function (scrubArr) {
                     //[{name:"name",value:"John",scrubs:["req","lower"]}]
@@ -1243,19 +1245,20 @@ const core = (() => {
          * core.ud.formatValue() called after core.ux.formatValue()
         * */
         ud: (() => {
-            let defaultDelta            = '';
-            let defaultDeltaFormat      = 'none';
-            let defaultClickTarget      = 'main';
-            let defaultDateFormat       = 'M/D/YY H:MM P';
-            let defaultLoadingTemplate  = '<marquee width="50%">loading...</marquee>';
-            let defaultEmptyTemplate    = '';
-            let defaultPageTitle        = 'C.O.R.E';
-            let defaultPageStatusUpdate = 'Updated bookmark location';
-            let alertMissingTemplate    = 'Not Found';
-            let alertEmptyTemplate      = 'Not Found';
-            let alertInvalidDate        = '*';
-            let hydrationClassIgnoreList= ['h-100'];
-            let formatClassIgnoreList   = [];
+            let defaultDelta              = '';
+            let defaultDeltaFormat        = 'none';
+            let defaultClickTarget        = 'main';
+            let defaultDateFormat         = 'M/D/YY H:MM P';
+            let defaultLoadingTemplate    = '<marquee width="50%">loading...</marquee>';
+            let defaultEmptyTemplate      = '';
+            let defaultPageTitle          = 'C.O.R.E';
+            let defaultPageStatusUpdate   = 'Updated bookmark location';
+            let alertMissingTemplate      = 'Not Found';
+            let alertMissingTypeReference = 'Unknown reference, use rec/aug';
+            let alertEmptyTemplate        = 'Not Found';
+            let alertInvalidDate          = '*';
+            let hydrationClassIgnoreList  = ['h-100'];
+            let formatClassIgnoreList     = [];
             return{
                 get defaultDelta() {
                     return defaultDelta;
@@ -1310,6 +1313,12 @@ const core = (() => {
                 },
                 set alertMissingTemplate(value) {
                     alertMissingTemplate = String(value);
+                },
+                get alertMissingTypeReference() {
+                    return alertMissingTypeReference;
+                },
+                set alertMissingTypeReference(value) {
+                    alertMissingTypeReference = String(value);
                 },
                 get alertEmptyTemplate() {
                     return alertEmptyTemplate;
