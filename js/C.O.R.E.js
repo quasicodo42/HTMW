@@ -709,8 +709,15 @@ const core = (() => {
                         core.pk.soc();
                         return;
                     }
-                    core.hf.hydrateByClass();
-                    core.hf.formatByClass();
+
+                    setTimeout(() => { //added in attempt to fix formatting bug 20240821
+                        core.hf.hydrateByClass();
+                        core.hf.formatByClass();
+                        if(typeof core.ud.eoc === "function"){
+                            core.ud.eoc();
+                        }
+                    })
+
                     //build the route directive from the DOM
                     let pockets = document.getElementsByClassName('core-pocket');
                     for (const pocket of pockets) {
@@ -741,9 +748,6 @@ const core = (() => {
                     //reset functional variables
                     stackTs   = 0;
                     directive = [];
-                    if(typeof core.ud.eoc === "function"){
-                        core.ud.eoc();
-                    }
                 },
                 /**
                  * Start of Call
