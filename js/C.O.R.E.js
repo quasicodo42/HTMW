@@ -961,8 +961,8 @@ const core = (() => {
                                     value = core.ud.alertMissingTypeReference;
                             }
                             //format if a value is present
-                            if(value != undefined) value = core.ux.formatValue((value || core.ud.defaultDelta), format, clue);
-                            newString = newString.replaceAll('{{' + placeholder + '}}', (value || core.ud.defaultDelta));
+                            if(value != undefined) value = core.ux.formatValue(value, format, clue);
+                            newString = newString.replaceAll('{{' + placeholder + '}}', value);
                         }
                         count++;
                         newTemplateStr = newTemplateStr + ' ' + newString;
@@ -991,7 +991,9 @@ const core = (() => {
                 format: function (value, formatStr, valueDefault) {
                     let [format, vDefault, clue] = String(formatStr || [core.ud.defaultDeltaFormat, core.ud.defaultDelta].join('.')).split('.');
                     let [clueCount, cluePad]     = String(clue || '4|0').split('|');
-                    value = value || valueDefault || vDefault;
+                    if(value != 0 && value != false){
+                        value = value || valueDefault || vDefault;
+                    }
                     switch(format.toLowerCase()){
                         case 'alphaonly':
                             value = value.replace(regex.alpha, '');
