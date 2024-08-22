@@ -958,11 +958,11 @@ const core = (() => {
                                     value = core.hf.digData(record, member);
                                     break;
                                 default:
-                                    value = core.ud.alertMissingTypeReference;
+                                    value = core.ud.alertMissingTypeReference + " '" + type + "'";
                             }
                             //format if a value is present
                             if(value != undefined) value = core.ux.formatValue(value, format, clue);
-                            newString = newString.replaceAll('{{' + placeholder + '}}', value);
+                            newString = newString.replaceAll('{{' + placeholder + '}}', ((value != null  || value != undefined) ? value : core.ud.defaultDelta)); //(value || value == 0  || value == false)
                         }
                         count++;
                         newTemplateStr = newTemplateStr + ' ' + newString;
@@ -1256,7 +1256,7 @@ const core = (() => {
             let defaultPageTitle          = 'C.O.R.E';
             let defaultPageStatusUpdate   = 'Updated bookmark location';
             let alertMissingTemplate      = 'Not Found';
-            let alertMissingTypeReference = 'Unknown reference, use rec/aug';
+            let alertMissingTypeReference = 'Unrecognized type';
             let alertEmptyTemplate        = 'Not Found';
             let alertInvalidDate          = '*';
             let hydrationClassIgnoreList  = ['h-100'];
