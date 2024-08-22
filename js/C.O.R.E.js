@@ -960,9 +960,9 @@ const core = (() => {
                                 default:
                                     value = core.ud.alertMissingTypeReference + " '" + type + "'";
                             }
-                            //format if a value is present
-                            if(value != undefined) value = core.ux.formatValue(value, format, clue);
-                            newString = newString.replaceAll('{{' + placeholder + '}}', ((value != null  || value != undefined) ? value : core.ud.defaultDelta)); //(value || value == 0  || value == false)
+                            //format if a format/value are present
+                            if(format && value != undefined) value = core.ux.formatValue(value, format, clue);
+                            newString = newString.replaceAll('{{' + placeholder + '}}', ((value != null  && value != undefined) ? value : core.ud.defaultDelta)); //(value || value == 0  || value == false)
                         }
                         count++;
                         newTemplateStr = newTemplateStr + ' ' + newString;
@@ -988,11 +988,11 @@ const core = (() => {
                 get regex() {
                     return regex;
                 },
-                format: function (value, formatStr, valueDefault) {
+                format: function (value, formatStr, valueDefault = '') {
                     let [format, vDefault, clue] = String(formatStr || [core.ud.defaultDeltaFormat, core.ud.defaultDelta].join('.')).split('.');
                     let [clueCount, cluePad]     = String(clue || '4|0').split('|');
                     if(value != 0 && value != false){
-                        value = value || valueDefault || vDefault;
+                        value = value || vDefault || valueDefault;
                     }
                     switch(format.toLowerCase()){
                         case 'alphaonly':
@@ -1083,7 +1083,7 @@ const core = (() => {
                         case 'removehtml':
                             let tempElem = document.createElement('DIV');
                             tempElem.innerHTML = String(value);
-                            value = tempElem.textContent || tempElem.innerText || '';
+                            value = tempElem.textContent || tempElem.innerText || core.ud.defaultDelta;
                             break;
                         case 'string':
                             value = String(value);
@@ -1092,7 +1092,7 @@ const core = (() => {
                             value = String(value).split("").map(v=>v.charCodeAt(0)).reduce((a,v)=>a+((a<<7)+(a<<3))^v).toString(16);
                             break;
                         case 'truncate':
-                            value = String(value).length < +clue ? String(value) : String(value).substring(0, +clue) + '...';
+                            value = String(value).length < +clue ? String(value) : String(value).substring(0, +clue) + core.ud.alertTruncated;
                             break;
                         case 'upper':
                             value = String(value).toUpperCase();
@@ -1259,6 +1259,7 @@ const core = (() => {
             let alertMissingTypeReference = 'Unrecognized type';
             let alertEmptyTemplate        = 'Not Found';
             let alertInvalidDate          = '*';
+            let alertTruncated            = '...';
             let hydrationClassIgnoreList  = ['h-100'];
             let formatClassIgnoreList     = [];
             return{
@@ -1333,6 +1334,12 @@ const core = (() => {
                 },
                 set alertInvalidDate(value) {
                     alertInvalidDate = String(value);
+                },
+                get alertTruncated() {
+                    return alertTruncated;
+                },
+                set alertTruncated(value) {
+                    alertTruncated = String(value);
                 },
                 get hydrationClassIgnoreList() {
                     return hydrationClassIgnoreList;
