@@ -758,7 +758,7 @@ const core = (() => {
                  */
                 soc: () => {
                     //don't continue until all preloaded backend data is loaded
-                    if(core_be_count){
+                    if(core_be_count){ //TODO somehow getting into the negatives, usually happens when there is an error in ud functions
                         if(timedOut) {
                             core.pk.eoc();
                         }else{
@@ -1022,14 +1022,16 @@ const core = (() => {
                             value = String(value).toLowerCase();
                             break;
                         case 'emaillink':
+                            //value: email to link; clue: string of attributes to append to element
                             value = String(value).toLowerCase();
-                            value = '<a href="mailto:' + value + '">' + value + '</a>';
+                            value = '<a href="mailto:' + value + '" ' + clue + '>' + value + '</a>';
                             break;
-                        case 'weblink':
-                            value = '<a href="' + value + '" target="_blank">' + value + '</a>';
+                        case 'urllink':
+                            //value: url to link; clue: string of attributes to append to element
+                            value = '<a href="' + value + '" target="_blank" ' + clue + '>' + value + '</a>';
                             break;
                         case 'imgsrc':
-                            //value: url of the image; clue: list of attributes to add to element
+                            //value: url of the image source; clue: string of attributes to append to element
                             value = '<img src="' + value + '" ' + clue + '>';
                             break;
                         case 'money':
@@ -1037,6 +1039,12 @@ const core = (() => {
                                 clue = '$';
                             }
                             value = (clue === '$' ? clue : '') + (+value).toFixed(2);
+                            break;
+                        case 'encodeuricomponent':
+                            value = encodeURIComponent(value);
+                            break;
+                        case 'encodeuri':
+                            value = encodeURI(value);
                             break;
                         case 'nospace':
                             value = String(value).split(' ').join('');
