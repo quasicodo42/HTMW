@@ -507,14 +507,14 @@ const core = (() => {
                  * @param {string} key - The key that will be used to sort.
                  * @returns {array} The sorted object.
                  */
-                sortObj: (objects, key, type) => {
+                sortObj: (objects, key, type, sort = 'ASC') => {
                     objects = objects || [{}];
                     type    = type || 'automatic';
                     let objType = typeof objects;
 
                     if(objType === 'object' && objects.length && objects[0].hasOwnProperty(key)){
                         //check if previous sort on same key
-                        if(key === prevSortKey){
+                        if(key === prevSortKey && sort === 'ASC'){
                             objects = objects.reverse();
                             return objects;
                         }
@@ -523,7 +523,7 @@ const core = (() => {
                             type = 'numeric';
                         }
                     }else{
-                        console.error('Object does not contain key [' + key + ']')
+                        console.error('C.O.R.E Error: Object does not contain key [' + key + ']')
                         return objects;
                     }
 
@@ -547,7 +547,11 @@ const core = (() => {
                             break;
                     }
 
-                    prevSortKey = key;
+                    if(sort !== 'ASC'){ //DESC
+                        objects = objects.reverse();
+                    }else{
+                        prevSortKey = key;
+                    }
 
                     return objects;
                 },
