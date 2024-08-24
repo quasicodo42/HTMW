@@ -571,6 +571,8 @@ const core = (() => {
                  * Basic Syntax: <span class="h-user-name">Bobby</span> Result -> <span class>John</span>
                  * Default Examples: h-userId, h-user-name, h-user-billing.address1, element will be hydrated (appended) and the class removed
                  * Options: h--countdown; element will be newly hydrated each call to the function
+                 * Alternate Example: use dataRef and data-h-data-ref for caches that contain hyphens (-), etc.
+                 * Alternate Option: <p class="h--dataRef-quote" data-h-data-ref="quote-book"></p> //dataRef = quote-book
                  * @param {string} classFilter - A string filter used to identify the filtered elements to hydrate.
                  *
                  * @returns {void}
@@ -586,7 +588,10 @@ const core = (() => {
                         const hClasses = Array.from(element.classList).filter(function (n) {return n.startsWith('h-')});
                         for (const hClass of hClasses){
                             if(core.ud.hydrationClassIgnoreList.includes(hClass)) continue;
-                            const [ref, cache, memberRef] = hClass.split('--').join('-').split('-');
+                            let [ref, cache, memberRef] = hClass.split('--').join('-').split('-');
+                            if(cache === 'dataRef' && element.dataset.hDataRef){
+                                cache = element.dataset.hDataRef;
+                            }
                             const data     = (core.cr.getData(cache) || {[(memberRef || 'not')]: (cache || 'found') + '*'});
                             const tag      = element.tagName;
                             const value    = (typeof data === 'string' ? data : core.hf.digData(data, memberRef));
